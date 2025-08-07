@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wiki Not Pedia</title>
+    <title>Painel Administrativo - WZZM</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans">
     <style>
         /* Estilos base do corpo e do contêiner */
@@ -11,13 +11,13 @@
             font-family: 'Noto Sans', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f8f9fa; /* Fundo claro */
-            color: #202122; /* Cor de texto padrão */
+            background-color: #f8f9fa;
+            color: #202122;
         }
 
         /* Estilos do formulário de login (agora com login Google) */
         .login-container {
-            display: none; /* Inicia oculto */
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -27,7 +27,7 @@
         .login-form {
             background-color: #ffffff;
             padding: 40px;
-            border: 1px solid #a2a9b1; /* Borda da Wikipédia */
+            border: 1px solid #a2a9b1;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 350px;
@@ -166,7 +166,7 @@
         }
         
         /* Estilos do painel de detalhes (inspirado na Wikipédia) */
-        .detalhes-artigo, #editor-artigo, #historico-artigo, #historico-contribuicoes, #novo-artigo {
+        .detalhes-artigo, #editor-artigo, #historico-artigo, #novo-artigo, #pagina-usuario {
             width: 70%;
             padding: 2em;
             overflow-y: auto;
@@ -223,17 +223,21 @@
             font-weight: bold;
             margin-bottom: 5px;
         }
-        #form-edicao-artigo input, #form-edicao-artigo textarea, #form-novo-artigo input, #form-novo-artigo textarea, #form-novo-artigo select {
+        #form-edicao-artigo input, #form-edicao-artigo textarea, #form-novo-artigo input, #form-novo-artigo textarea, #form-novo-artigo select, #pagina-pessoal-textarea {
             border: 1px solid #a2a9b1;
             border-radius: 4px;
             padding: 8px;
             box-sizing: border-box;
         }
-        #form-edicao-artigo textarea, #form-novo-artigo textarea {
+        #form-edicao-artigo textarea, #form-novo-artigo textarea, #pagina-pessoal-textarea {
             resize: vertical;
         }
-        #form-edicao-artigo button, #form-novo-artigo button {
+        #form-edicao-artigo button, #form-novo-artigo button, .user-tabs button, #salvar-pagina-pessoal, #cancelar-pagina-pessoal {
             margin-right: 10px;
+        }
+        .user-tabs .tab-button.active {
+            background-color: #0645ad;
+            color: white;
         }
     </style>
 </head>
@@ -252,10 +256,10 @@
 
 <div id="logged-in-container">
     <div class="header-logged-in" id="header-logged-in">
-        <h1>Wiki Not Pédia - Όχι, ο Χρόνος δεν είναι ο άρχοντας της γνώσης</h1>
+        <h1>Wiki NOT Pédia</h1>
         <div>
             <button id="novo-artigo-button" style="padding: 8px 15px; background-color: #2a9d8f; color: white; border: none; cursor: pointer; margin-right: 10px;">Novo Artigo</button>
-            <button id="contribuicoes-button" style="padding: 8px 15px; background-color: #0645ad; color: white; border: none; cursor: pointer; margin-right: 10px;">Minhas Contribuições</button>
+            <button id="perfil-button" style="padding: 8px 15px; background-color: #54595d; color: white; border: none; cursor: pointer; margin-right: 10px;">Meu Perfil</button>
             <button id="logout-button">Sair</button>
         </div>
     </div>
@@ -334,14 +338,6 @@
                 <button type="button" id="voltar-detalhes" style="margin-top: 1em; padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Voltar</button>
             </div>
 
-            <div id="historico-contribuicoes" style="display: none; width: 70%; padding: 2em; overflow-y: auto; background-color: #ffffff; line-height: 1.6;">
-                <h2 style="border-bottom: 1px solid #a2a9b1; padding-bottom: 0.5em;">Minhas Contribuições</h2>
-                <div id="lista-minhas-contribuicoes">
-                    <p style="text-align: center; color: #888;">Carregando suas contribuições...</p>
-                </div>
-                <button type="button" id="voltar-ao-painel" style="margin-top: 1em; padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Voltar ao Painel</button>
-            </div>
-
             <div id="novo-artigo" style="display: none; width: 70%; padding: 2em; overflow-y: auto; background-color: #ffffff; line-height: 1.6;">
                 <form id="form-novo-artigo">
                     <h2>Criar Novo Artigo</h2>
@@ -386,6 +382,47 @@
                     <button type="button" id="cancelar-novo-artigo" style="padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Cancelar</button>
                 </form>
             </div>
+
+            <div id="pagina-usuario" style="display: none; width: 70%; padding: 2em; overflow-y: auto; background-color: #ffffff; line-height: 1.6;">
+                <div class="user-header" style="border-bottom: 1px solid #a2a9b1; padding-bottom: 0.5em; margin-bottom: 1.5em;">
+                    <h2 id="user-display-name">Carregando Perfil...</h2>
+                </div>
+
+                <div class="user-tabs" style="margin-bottom: 1.5em;">
+                    <button class="tab-button" data-tab="contribuicoes" style="padding: 10px 15px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Minhas Contribuições</button>
+                    <button class="tab-button" data-tab="pagina-pessoal" style="padding: 10px 15px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Página Pessoal</button>
+                    <button class="tab-button" data-tab="discussao" style="padding: 10px 15px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Discussão</button>
+                </div>
+                
+                <div id="contribuicoes-tab" class="tab-content" style="display: none;">
+                    <h3 style="margin-top: 0;">Lista de Contribuições</h3>
+                    <div id="lista-minhas-contribuicoes">
+                        <p style="text-align: center; color: #888;">Carregando suas contribuições...</p>
+                    </div>
+                </div>
+
+                <div id="pagina-pessoal-tab" class="tab-content" style="display: none;">
+                    <h3 style="margin-top: 0;">Página Pessoal</h3>
+                    <div id="pagina-pessoal-editor" style="margin-bottom: 1em;">
+                        <textarea id="pagina-pessoal-textarea" rows="15" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #a2a9b1;"></textarea>
+                        <button id="salvar-pagina-pessoal" style="margin-top: 10px; padding: 10px 20px; background-color: #2a9d8f; color: white; border: none; cursor: pointer;">Salvar</button>
+                        <button id="cancelar-pagina-pessoal" style="margin-top: 10px; padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Cancelar</button>
+                    </div>
+                    <div id="pagina-pessoal-viewer" style="border: 1px solid #ccc; padding: 1em; background-color: #f9f9f9; display: none;">
+                        <p id="pagina-pessoal-content"></p>
+                    </div>
+                </div>
+                
+                <div id="discussao-tab" class="tab-content" style="display: none;">
+                    <h3 style="margin-top: 0;">Mensagens e Notificações</h3>
+                    <div id="lista-mensagens">
+                        <p style="text-align: center; color: #888;">Nenhuma mensagem nova.</p>
+                    </div>
+                </div>
+
+                <button type="button" id="voltar-ao-painel-perfil" style="margin-top: 2em; padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Voltar ao Painel</button>
+            </div>
+            
         </div>
     </div>
 </div>
@@ -443,10 +480,24 @@ const newSetor = document.getElementById('new-setor');
 const newArmario = document.getElementById('new-armario');
 const newDescricao = document.getElementById('new-descricao');
 const cancelarNovoArtigoBtn = document.getElementById('cancelar-novo-artigo');
-const contribuicoesButton = document.getElementById('contribuicoes-button');
-const historicoContribuicoes = document.getElementById('historico-contribuicoes');
+
+// NOVOS ELEMENTOS: Página do Usuário
+const perfilButton = document.getElementById('perfil-button');
+const paginaUsuarioSection = document.getElementById('pagina-usuario');
+const userDisplayName = document.getElementById('user-display-name');
+const contribuicoesTab = document.getElementById('contribuicoes-tab');
+const paginaPessoalTab = document.getElementById('pagina-pessoal-tab');
+const discussaoTab = document.getElementById('discussao-tab');
+const paginaPessoalTextarea = document.getElementById('pagina-pessoal-textarea');
+const paginaPessoalViewer = document.getElementById('pagina-pessoal-viewer');
+const paginaPessoalContent = document.getElementById('pagina-pessoal-content');
+const salvarPaginaPessoalBtn = document.getElementById('salvar-pagina-pessoal');
+const cancelarPaginaPessoalBtn = document.getElementById('cancelar-pagina-pessoal');
+const voltarAoPainelPerfilBtn = document.getElementById('voltar-ao-painel-perfil');
 const listaMinhasContribuicoes = document.getElementById('lista-minhas-contribuicoes');
-const voltarAoPainelBtn = document.getElementById('voltar-ao-painel');
+const listaMensagens = document.getElementById('lista-mensagens');
+const tabButtons = document.querySelectorAll('.tab-button');
+
 
 let artigoSelecionado = null;
 let currentCategory = 'all';
@@ -461,6 +512,7 @@ auth.onAuthStateChanged(user => {
         loginSection.style.display = 'none';
         loggedInHeader.style.display = 'flex';
         mainContainer.style.display = 'flex';
+        userDisplayName.textContent = user.displayName || user.email;
         buscarArtigos(currentCategory, currentArmario);
     } else {
         console.log("Nenhum usuário logado.");
@@ -471,8 +523,8 @@ auth.onAuthStateChanged(user => {
         detalhesArtigo.innerHTML = '<p style="text-align: center; color: #888;">Selecione um artigo na lista para ver os detalhes.</p>';
         editorArtigo.style.display = 'none';
         historicoArtigo.style.display = 'none';
-        historicoContribuicoes.style.display = 'none';
         novoArtigoSection.style.display = 'none';
+        paginaUsuarioSection.style.display = 'none';
     }
 });
 
@@ -495,8 +547,8 @@ async function buscarArtigos(categoria, armario) {
     detalhesArtigo.style.display = 'none';
     editorArtigo.style.display = 'none';
     historicoArtigo.style.display = 'none';
-    historicoContribuicoes.style.display = 'none';
     novoArtigoSection.style.display = 'none';
+    paginaUsuarioSection.style.display = 'none';
 
     let query = db.collection('materias').orderBy('createdAt', 'desc').limit(10);
     
@@ -552,8 +604,8 @@ async function buscarArtigos(categoria, armario) {
 function carregarDetalhesArtigo(id, materia) {
     editorArtigo.style.display = 'none';
     historicoArtigo.style.display = 'none';
-    historicoContribuicoes.style.display = 'none';
     novoArtigoSection.style.display = 'none';
+    paginaUsuarioSection.style.display = 'none';
     detalhesArtigo.style.display = 'block';
 
     let fontesHtml = '';
@@ -608,8 +660,8 @@ function carregarDetalhesArtigo(id, materia) {
 function abrirEditor(id, materia) {
     detalhesArtigo.style.display = 'none';
     historicoArtigo.style.display = 'none';
-    historicoContribuicoes.style.display = 'none';
     novoArtigoSection.style.display = 'none';
+    paginaUsuarioSection.style.display = 'none';
     editorArtigo.style.display = 'block';
 
     editTitulo.value = materia.titulo || '';
@@ -673,8 +725,8 @@ formEdicaoArtigo.addEventListener('submit', async (e) => {
 async function abrirHistorico(id) {
     detalhesArtigo.style.display = 'none';
     editorArtigo.style.display = 'none';
-    historicoContribuicoes.style.display = 'none';
     novoArtigoSection.style.display = 'none';
+    paginaUsuarioSection.style.display = 'none';
     historicoArtigo.style.display = 'block';
 
     listaHistorico.innerHTML = '<p style="text-align: center; color: #888;">Carregando histórico...</p>';
@@ -721,78 +773,12 @@ voltarDetalhesBtn.addEventListener('click', () => {
     });
 });
 
-// --- FUNÇÃO: Abrir Histórico de Contribuições do Usuário ---
-async function abrirHistoricoContribuicoes() {
-    const user = auth.currentUser;
-    if (!user) {
-        alert("Você precisa estar logado para ver suas contribuições.");
-        return;
-    }
-
-    detalhesArtigo.style.display = 'none';
-    editorArtigo.style.display = 'none';
-    historicoArtigo.style.display = 'none';
-    novoArtigoSection.style.display = 'none';
-    historicoContribuicoes.style.display = 'block';
-
-    listaMinhasContribuicoes.innerHTML = '<p style="text-align: center; color: #888;">Buscando suas contribuições...</p>';
-
-    try {
-        const querySnapshot = await db.collection('historicoEdicoes')
-            .where('editorId', '==', user.uid)
-            .orderBy('dataEdicao', 'desc')
-            .get();
-
-        if (querySnapshot.empty) {
-            listaMinhasContribuicoes.innerHTML = '<p style="text-align: center; color: #888;">Você ainda não fez nenhuma contribuição.</p>';
-            return;
-        }
-
-        let html = '';
-        querySnapshot.forEach(doc => {
-            const contribuicao = doc.data();
-            const dataFormatada = contribuicao.dataEdicao ? new Date(contribuicao.dataEdicao.seconds * 1000).toLocaleString() : 'Data desconhecida';
-            const tituloArtigo = contribuicao.titulo || 'Título não disponível';
-
-            html += `
-                <div class="contribuicao-item" data-id="${contribuicao.idArtigo}">
-                    <p><strong>Artigo:</strong> ${tituloArtigo}</p>
-                    <p><strong>Data da Edição:</strong> ${dataFormatada}</p>
-                    <p><strong>Resumo:</strong> ${contribuicao.sumarioEdicao || 'Nenhum'}</p>
-                </div>
-            `;
-        });
-        listaMinhasContribuicoes.innerHTML = html;
-
-        listaMinhasContribuicoes.querySelectorAll('.contribuicao-item').forEach(item => {
-            item.addEventListener('click', async (e) => {
-                const artigoId = e.currentTarget.getAttribute('data-id');
-                try {
-                    const doc = await db.collection('materias').doc(artigoId).get();
-                    if (doc.exists) {
-                        carregarDetalhesArtigo(doc.id, doc.data());
-                    } else {
-                        alert("O artigo original não foi encontrado.");
-                    }
-                } catch (error) {
-                    console.error("Erro ao buscar o artigo:", error);
-                    alert("Erro ao buscar o artigo.");
-                }
-            });
-        });
-
-    } catch (error) {
-        console.error("Erro ao buscar suas contribuições:", error);
-        listaMinhasContribuicoes.innerHTML = `<p style="text-align: center; color: #e74c3c;">Erro ao carregar suas contribuições: ${error.message}</p>`;
-    }
-}
-
-// --- NOVAS FUNÇÕES: Criação de Artigo ---
+// --- Funções de Criação de Artigo ---
 function abrirFormNovoArtigo() {
     detalhesArtigo.style.display = 'none';
     editorArtigo.style.display = 'none';
     historicoArtigo.style.display = 'none';
-    historicoContribuicoes.style.display = 'none';
+    paginaUsuarioSection.style.display = 'none';
     novoArtigoSection.style.display = 'block';
 
     formNovoArtigo.reset();
@@ -844,12 +830,163 @@ cancelarNovoArtigoBtn.addEventListener('click', () => {
     buscarArtigos(currentCategory, currentArmario);
 });
 
+// --- Funções da Página do Usuário ---
+function abrirPaginaUsuario() {
+    const user = auth.currentUser;
+    if (!user) {
+        alert("Você precisa estar logado para ver seu perfil.");
+        return;
+    }
+
+    detalhesArtigo.style.display = 'none';
+    editorArtigo.style.display = 'none';
+    historicoArtigo.style.display = 'none';
+    novoArtigoSection.style.display = 'none';
+    paginaUsuarioSection.style.display = 'block';
+
+    // Por padrão, abre a aba de Contribuições
+    exibirAba('contribuicoes');
+}
+
+function exibirAba(tabName) {
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+        btn.style.backgroundColor = '#a2a9b1';
+    });
+    document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+    
+    const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+    activeBtn.classList.add('active');
+    activeBtn.style.backgroundColor = '#0645ad';
+    document.getElementById(`${tabName}-tab`).style.display = 'block';
+
+    if (tabName === 'contribuicoes') {
+        carregarMinhasContribuicoes();
+    } else if (tabName === 'pagina-pessoal') {
+        carregarPaginaPessoal();
+    } else if (tabName === 'discussao') {
+        carregarMensagensDiscussao();
+    }
+}
+
+async function carregarMinhasContribuicoes() {
+    const user = auth.currentUser;
+    listaMinhasContribuicoes.innerHTML = '<p style="text-align: center; color: #888;">Buscando suas contribuições...</p>';
+
+    try {
+        const querySnapshot = await db.collection('historicoEdicoes')
+            .where('editorId', '==', user.uid)
+            .orderBy('dataEdicao', 'desc')
+            .get();
+
+        if (querySnapshot.empty) {
+            listaMinhasContribuicoes.innerHTML = '<p style="text-align: center; color: #888;">Você ainda não fez nenhuma contribuição.</p>';
+            return;
+        }
+
+        let html = '';
+        querySnapshot.forEach(doc => {
+            const contribuicao = doc.data();
+            const dataFormatada = contribuicao.dataEdicao ? new Date(contribuicao.dataEdicao.seconds * 1000).toLocaleString() : 'Data desconhecida';
+            const tituloArtigo = contribuicao.titulo || 'Título não disponível';
+
+            html += `
+                <div class="contribuicao-item" data-id="${contribuicao.idArtigo}">
+                    <p><strong>Artigo:</strong> ${tituloArtigo}</p>
+                    <p><strong>Data da Edição:</strong> ${dataFormatada}</p>
+                    <p><strong>Resumo:</strong> ${contribuicao.sumarioEdicao || 'Nenhum'}</p>
+                </div>
+            `;
+        });
+        listaMinhasContribuicoes.innerHTML = html;
+
+        listaMinhasContribuicoes.querySelectorAll('.contribuicao-item').forEach(item => {
+            item.addEventListener('click', async (e) => {
+                const artigoId = e.currentTarget.getAttribute('data-id');
+                try {
+                    const doc = await db.collection('materias').doc(artigoId).get();
+                    if (doc.exists) {
+                        carregarDetalhesArtigo(doc.id, doc.data());
+                    } else {
+                        alert("O artigo original não foi encontrado.");
+                    }
+                } catch (error) {
+                    console.error("Erro ao buscar o artigo:", error);
+                    alert("Erro ao buscar o artigo.");
+                }
+            });
+        });
+    } catch (error) {
+        console.error("Erro ao buscar suas contribuições:", error);
+        listaMinhasContribuicoes.innerHTML = `<p style="text-align: center; color: #e74c3c;">Erro ao carregar suas contribuições: ${error.message}</p>`;
+    }
+}
+
+async function carregarPaginaPessoal() {
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    try {
+        const docRef = db.collection('paginasUsuario').doc(user.uid);
+        const doc = await docRef.get();
+        if (doc.exists) {
+            const data = doc.data();
+            paginaPessoalTextarea.value = data.conteudo || '';
+            paginaPessoalContent.innerHTML = data.conteudo || '<p>Sua página pessoal ainda está vazia.</p>';
+        } else {
+            paginaPessoalTextarea.value = '';
+            paginaPessoalContent.innerHTML = '<p>Sua página pessoal ainda está vazia.</p>';
+        }
+    } catch (error) {
+        console.error("Erro ao carregar página pessoal:", error);
+        alert("Erro ao carregar sua página pessoal.");
+    }
+}
+
+async function salvarPaginaPessoal() {
+    const user = auth.currentUser;
+    if (!user) return;
+    const conteudo = paginaPessoalTextarea.value;
+    
+    try {
+        await db.collection('paginasUsuario').doc(user.uid).set({
+            conteudo: conteudo,
+            editorEmail: user.email,
+            ultimaEdicao: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        alert("Página pessoal salva com sucesso!");
+        carregarPaginaPessoal();
+    } catch (error) {
+        console.error("Erro ao salvar página pessoal:", error);
+        alert("Erro ao salvar sua página pessoal.");
+    }
+}
+
+function carregarMensagensDiscussao() {
+    listaMensagens.innerHTML = `
+        <div style="border-bottom: 1px solid #eaecf0; padding: 1em 0; margin-bottom: 1em;">
+            <p><strong>Aviso:</strong> Este é um espaço reservado para notificações futuras.</p>
+        </div>
+        <p style="text-align: center; color: #888;">Nenhuma mensagem nova.</p>
+    `;
+}
+
 // --- Event Listeners para os botões e filtros ---
-contribuicoesButton.addEventListener('click', abrirHistoricoContribuicoes);
+perfilButton.addEventListener('click', abrirPaginaUsuario);
 novoArtigoButton.addEventListener('click', abrirFormNovoArtigo);
 
-voltarAoPainelBtn.addEventListener('click', () => {
-    historicoContribuicoes.style.display = 'none';
+tabButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+        const tabName = e.target.getAttribute('data-tab');
+        exibirAba(tabName);
+    });
+});
+
+salvarPaginaPessoalBtn.addEventListener('click', salvarPaginaPessoal);
+cancelarPaginaPessoalBtn.addEventListener('click', carregarPaginaPessoal);
+
+voltarAoPainelPerfilBtn.addEventListener('click', () => {
+    paginaUsuarioSection.style.display = 'none';
     buscarArtigos(currentCategory, currentArmario);
 });
 
