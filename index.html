@@ -166,7 +166,7 @@
         }
         
         /* Estilos do painel de detalhes (inspirado na Wikipédia) */
-        .detalhes-artigo, #editor-artigo, #historico-artigo, #historico-contribuicoes {
+        .detalhes-artigo, #editor-artigo, #historico-artigo, #historico-contribuicoes, #novo-artigo {
             width: 70%;
             padding: 2em;
             overflow-y: auto;
@@ -218,21 +218,21 @@
         }
 
         /* Estilos para o editor de artigos */
-        #form-edicao-artigo label {
+        #form-edicao-artigo label, #form-novo-artigo label {
             display: block;
             font-weight: bold;
             margin-bottom: 5px;
         }
-        #form-edicao-artigo input, #form-edicao-artigo textarea {
+        #form-edicao-artigo input, #form-edicao-artigo textarea, #form-novo-artigo input, #form-novo-artigo textarea, #form-novo-artigo select {
             border: 1px solid #a2a9b1;
             border-radius: 4px;
             padding: 8px;
             box-sizing: border-box;
         }
-        #form-edicao-artigo textarea {
+        #form-edicao-artigo textarea, #form-novo-artigo textarea {
             resize: vertical;
         }
-        #form-edicao-artigo button {
+        #form-edicao-artigo button, #form-novo-artigo button {
             margin-right: 10px;
         }
     </style>
@@ -254,6 +254,7 @@
     <div class="header-logged-in" id="header-logged-in">
         <h1>Wiki NOT Pédia</h1>
         <div>
+            <button id="novo-artigo-button" style="padding: 8px 15px; background-color: #2a9d8f; color: white; border: none; cursor: pointer; margin-right: 10px;">Novo Artigo</button>
             <button id="contribuicoes-button" style="padding: 8px 15px; background-color: #0645ad; color: white; border: none; cursor: pointer; margin-right: 10px;">Minhas Contribuições</button>
             <button id="logout-button">Sair</button>
         </div>
@@ -340,6 +341,51 @@
                 </div>
                 <button type="button" id="voltar-ao-painel" style="margin-top: 1em; padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Voltar ao Painel</button>
             </div>
+
+            <div id="novo-artigo" style="display: none; width: 70%; padding: 2em; overflow-y: auto; background-color: #ffffff; line-height: 1.6;">
+                <form id="form-novo-artigo">
+                    <h2>Criar Novo Artigo</h2>
+
+                    <div style="margin-bottom: 1em;">
+                        <label for="new-titulo">Título</label>
+                        <input type="text" id="new-titulo" required style="width: 100%; padding: 8px; margin-top: 5px;">
+                    </div>
+
+                    <div style="margin-bottom: 1em;">
+                        <label for="new-setor">Setor / Categoria</label>
+                        <select id="new-setor" required style="width: 100%; padding: 8px; margin-top: 5px;">
+                            <option value="">Selecione uma categoria</option>
+                            <option value="Arte">Arte</option>
+                            <option value="Biografias">Biografias</option>
+                            <option value="Ciência">Ciência</option>
+                            <option value="Filosofia">Filosofia</option>
+                            <option value="Geografia">Geografia</option>
+                            <option value="História">História</option>
+                            <option value="Matemática">Matemática</option>
+                            <option value="Sociedade">Sociedade</option>
+                            <option value="Tecnologia">Tecnologia</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 1em;">
+                        <label for="new-armario">Idioma</label>
+                        <select id="new-armario" required style="width: 100%; padding: 8px; margin-top: 5px;">
+                            <option value="">Selecione um idioma</option>
+                            <option value="Português">Português</option>
+                            <option value="Inglês">Inglês</option>
+                            <option value="Espanhol">Espanhol</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 1em;">
+                        <label for="new-descricao">Descrição</label>
+                        <textarea id="new-descricao" rows="15" required style="width: 100%; padding: 8px; margin-top: 5px;"></textarea>
+                    </div>
+                    
+                    <button type="submit" style="padding: 10px 20px; background-color: #2a9d8f; color: white; border: none; cursor: pointer;">Criar Artigo</button>
+                    <button type="button" id="cancelar-novo-artigo" style="padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Cancelar</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -388,7 +434,15 @@ const historicoArtigo = document.getElementById('historico-artigo');
 const listaHistorico = document.getElementById('lista-historico');
 const voltarDetalhesBtn = document.getElementById('voltar-detalhes');
 
-// NOVOS ELEMENTOS: Histórico de Contribuições
+// NOVOS ELEMENTOS: Criação e Histórico de Contribuições
+const novoArtigoButton = document.getElementById('novo-artigo-button');
+const novoArtigoSection = document.getElementById('novo-artigo');
+const formNovoArtigo = document.getElementById('form-novo-artigo');
+const newTitulo = document.getElementById('new-titulo');
+const newSetor = document.getElementById('new-setor');
+const newArmario = document.getElementById('new-armario');
+const newDescricao = document.getElementById('new-descricao');
+const cancelarNovoArtigoBtn = document.getElementById('cancelar-novo-artigo');
 const contribuicoesButton = document.getElementById('contribuicoes-button');
 const historicoContribuicoes = document.getElementById('historico-contribuicoes');
 const listaMinhasContribuicoes = document.getElementById('lista-minhas-contribuicoes');
@@ -418,6 +472,7 @@ auth.onAuthStateChanged(user => {
         editorArtigo.style.display = 'none';
         historicoArtigo.style.display = 'none';
         historicoContribuicoes.style.display = 'none';
+        novoArtigoSection.style.display = 'none';
     }
 });
 
@@ -437,10 +492,11 @@ logoutButton.addEventListener('click', () => {
 // --- Lógica de busca e exibição dos artigos ---
 async function buscarArtigos(categoria, armario) {
     artigosList.innerHTML = '<p style="text-align: center; color: #666;">Carregando...</p>';
-    detalhesArtigo.innerHTML = '<p style="text-align: center; color: #888;">Selecione um artigo na lista para ver os detalhes.</p>';
+    detalhesArtigo.style.display = 'none';
     editorArtigo.style.display = 'none';
     historicoArtigo.style.display = 'none';
     historicoContribuicoes.style.display = 'none';
+    novoArtigoSection.style.display = 'none';
 
     let query = db.collection('materias').orderBy('createdAt', 'desc').limit(10);
     
@@ -497,6 +553,7 @@ function carregarDetalhesArtigo(id, materia) {
     editorArtigo.style.display = 'none';
     historicoArtigo.style.display = 'none';
     historicoContribuicoes.style.display = 'none';
+    novoArtigoSection.style.display = 'none';
     detalhesArtigo.style.display = 'block';
 
     let fontesHtml = '';
@@ -550,6 +607,9 @@ function carregarDetalhesArtigo(id, materia) {
 // --- Funções de Edição ---
 function abrirEditor(id, materia) {
     detalhesArtigo.style.display = 'none';
+    historicoArtigo.style.display = 'none';
+    historicoContribuicoes.style.display = 'none';
+    novoArtigoSection.style.display = 'none';
     editorArtigo.style.display = 'block';
 
     editTitulo.value = materia.titulo || '';
@@ -614,6 +674,7 @@ async function abrirHistorico(id) {
     detalhesArtigo.style.display = 'none';
     editorArtigo.style.display = 'none';
     historicoContribuicoes.style.display = 'none';
+    novoArtigoSection.style.display = 'none';
     historicoArtigo.style.display = 'block';
 
     listaHistorico.innerHTML = '<p style="text-align: center; color: #888;">Carregando histórico...</p>';
@@ -660,7 +721,7 @@ voltarDetalhesBtn.addEventListener('click', () => {
     });
 });
 
-// --- FUNÇÃO NOVA: Abrir Histórico de Contribuições do Usuário ---
+// --- FUNÇÃO: Abrir Histórico de Contribuições do Usuário ---
 async function abrirHistoricoContribuicoes() {
     const user = auth.currentUser;
     if (!user) {
@@ -671,6 +732,7 @@ async function abrirHistoricoContribuicoes() {
     detalhesArtigo.style.display = 'none';
     editorArtigo.style.display = 'none';
     historicoArtigo.style.display = 'none';
+    novoArtigoSection.style.display = 'none';
     historicoContribuicoes.style.display = 'block';
 
     listaMinhasContribuicoes.innerHTML = '<p style="text-align: center; color: #888;">Buscando suas contribuições...</p>';
@@ -725,8 +787,66 @@ async function abrirHistoricoContribuicoes() {
     }
 }
 
+// --- NOVAS FUNÇÕES: Criação de Artigo ---
+function abrirFormNovoArtigo() {
+    detalhesArtigo.style.display = 'none';
+    editorArtigo.style.display = 'none';
+    historicoArtigo.style.display = 'none';
+    historicoContribuicoes.style.display = 'none';
+    novoArtigoSection.style.display = 'block';
+
+    formNovoArtigo.reset();
+}
+
+formNovoArtigo.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const user = auth.currentUser;
+    if (!user) {
+        alert("Você precisa estar logado para criar um artigo.");
+        return;
+    }
+
+    const novoArtigoData = {
+        titulo: newTitulo.value,
+        descricao: newDescricao.value,
+        setor: newSetor.value,
+        armario: newArmario.value,
+        arquivo: 'nao-arquivado',
+        fontes: [], 
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        ultimaEdicao: firebase.firestore.FieldValue.serverTimestamp(),
+        editorId: user.uid,
+        editorEmail: user.email
+    };
+
+    try {
+        const novoDocRef = await db.collection('materias').add(novoArtigoData);
+        
+        const historicoData = {
+            ...novoArtigoData,
+            idArtigo: novoDocRef.id,
+            dataEdicao: novoArtigoData.ultimaEdicao,
+            sumarioEdicao: 'Criação do artigo.'
+        };
+        await db.collection('historicoEdicoes').add(historicoData);
+
+        alert("Artigo criado com sucesso!");
+        formNovoArtigo.reset();
+        buscarArtigos(currentCategory, currentArmario);
+    } catch (error) {
+        console.error("Erro ao criar o artigo:", error);
+        alert("Erro ao criar o artigo: " + error.message);
+    }
+});
+
+cancelarNovoArtigoBtn.addEventListener('click', () => {
+    novoArtigoSection.style.display = 'none';
+    buscarArtigos(currentCategory, currentArmario);
+});
+
 // --- Event Listeners para os botões e filtros ---
 contribuicoesButton.addEventListener('click', abrirHistoricoContribuicoes);
+novoArtigoButton.addEventListener('click', abrirFormNovoArtigo);
 
 voltarAoPainelBtn.addEventListener('click', () => {
     historicoContribuicoes.style.display = 'none';
