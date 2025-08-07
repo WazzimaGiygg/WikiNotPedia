@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wiki Not Pedia - WZZM</title>
-    <link rel="icon" href="wnp.png" type="image/x-icon">
+    <title>Painel Administrativo - WZZM</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans">
     <style>
         /* Estilos base do corpo e do contêiner */
@@ -146,13 +145,13 @@
             border-bottom: 1px solid #a2a9b1;
             padding-bottom: 0.5em;
         }
-        .artigo-item {
+        .artigo-item, .contribuicao-item {
             padding: 1em;
             border-bottom: 1px solid #eaecf0;
             cursor: pointer;
             transition: background-color 0.2s;
         }
-        .artigo-item:hover, .artigo-item.ativo {
+        .artigo-item:hover, .artigo-item.ativo, .contribuicao-item:hover {
             background-color: #eaf3ff;
         }
         .artigo-item h3 {
@@ -160,14 +159,14 @@
             color: #0645ad;
             font-size: 1.1em;
         }
-        .artigo-item p {
+        .artigo-item p, .contribuicao-item p {
             font-size: 0.9em;
             color: #54595d;
             margin: 0;
         }
         
         /* Estilos do painel de detalhes (inspirado na Wikipédia) */
-        .detalhes-artigo, #editor-artigo, #historico-artigo {
+        .detalhes-artigo, #editor-artigo, #historico-artigo, #historico-contribuicoes {
             width: 70%;
             padding: 2em;
             overflow-y: auto;
@@ -254,7 +253,10 @@
 <div id="logged-in-container">
     <div class="header-logged-in" id="header-logged-in">
         <h1>Wiki NOT Pédia</h1>
-        <button id="logout-button">Sair</button>
+        <div>
+            <button id="contribuicoes-button" style="padding: 8px 15px; background-color: #0645ad; color: white; border: none; cursor: pointer; margin-right: 10px;">Minhas Contribuições</button>
+            <button id="logout-button">Sair</button>
+        </div>
     </div>
     
     <div class="main-container" id="content-split">
@@ -330,6 +332,14 @@
                 </div>
                 <button type="button" id="voltar-detalhes" style="margin-top: 1em; padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Voltar</button>
             </div>
+
+            <div id="historico-contribuicoes" style="display: none; width: 70%; padding: 2em; overflow-y: auto; background-color: #ffffff; line-height: 1.6;">
+                <h2 style="border-bottom: 1px solid #a2a9b1; padding-bottom: 0.5em;">Minhas Contribuições</h2>
+                <div id="lista-minhas-contribuicoes">
+                    <p style="text-align: center; color: #888;">Carregando suas contribuições...</p>
+                </div>
+                <button type="button" id="voltar-ao-painel" style="margin-top: 1em; padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Voltar ao Painel</button>
+            </div>
         </div>
     </div>
 </div>
@@ -365,8 +375,6 @@ const detalhesArtigo = document.getElementById('detalhes-artigo');
 const artigosTitle = document.getElementById('artigos-title');
 const categoryList = document.getElementById('category-list');
 const armarioFilter = document.getElementById('armario-filter');
-
-// Elemento do botão de login do Google
 const googleLoginBtn = document.getElementById('google-login-btn');
 
 // Elementos de edição e histórico
@@ -379,6 +387,12 @@ const cancelarEdicaoBtn = document.getElementById('cancelar-edicao');
 const historicoArtigo = document.getElementById('historico-artigo');
 const listaHistorico = document.getElementById('lista-historico');
 const voltarDetalhesBtn = document.getElementById('voltar-detalhes');
+
+// NOVOS ELEMENTOS: Histórico de Contribuições
+const contribuicoesButton = document.getElementById('contribuicoes-button');
+const historicoContribuicoes = document.getElementById('historico-contribuicoes');
+const listaMinhasContribuicoes = document.getElementById('lista-minhas-contribuicoes');
+const voltarAoPainelBtn = document.getElementById('voltar-ao-painel');
 
 let artigoSelecionado = null;
 let currentCategory = 'all';
@@ -403,6 +417,7 @@ auth.onAuthStateChanged(user => {
         detalhesArtigo.innerHTML = '<p style="text-align: center; color: #888;">Selecione um artigo na lista para ver os detalhes.</p>';
         editorArtigo.style.display = 'none';
         historicoArtigo.style.display = 'none';
+        historicoContribuicoes.style.display = 'none';
     }
 });
 
@@ -425,6 +440,7 @@ async function buscarArtigos(categoria, armario) {
     detalhesArtigo.innerHTML = '<p style="text-align: center; color: #888;">Selecione um artigo na lista para ver os detalhes.</p>';
     editorArtigo.style.display = 'none';
     historicoArtigo.style.display = 'none';
+    historicoContribuicoes.style.display = 'none';
 
     let query = db.collection('materias').orderBy('createdAt', 'desc').limit(10);
     
@@ -480,6 +496,7 @@ async function buscarArtigos(categoria, armario) {
 function carregarDetalhesArtigo(id, materia) {
     editorArtigo.style.display = 'none';
     historicoArtigo.style.display = 'none';
+    historicoContribuicoes.style.display = 'none';
     detalhesArtigo.style.display = 'block';
 
     let fontesHtml = '';
@@ -592,10 +609,11 @@ formEdicaoArtigo.addEventListener('submit', async (e) => {
     }
 });
 
-// --- Funções de Histórico ---
+// --- Funções de Histórico (individual do artigo) ---
 async function abrirHistorico(id) {
     detalhesArtigo.style.display = 'none';
     editorArtigo.style.display = 'none';
+    historicoContribuicoes.style.display = 'none';
     historicoArtigo.style.display = 'block';
 
     listaHistorico.innerHTML = '<p style="text-align: center; color: #888;">Carregando histórico...</p>';
@@ -642,7 +660,79 @@ voltarDetalhesBtn.addEventListener('click', () => {
     });
 });
 
-// --- Event Listeners para as categorias e o filtro de idioma ---
+// --- FUNÇÃO NOVA: Abrir Histórico de Contribuições do Usuário ---
+async function abrirHistoricoContribuicoes() {
+    const user = auth.currentUser;
+    if (!user) {
+        alert("Você precisa estar logado para ver suas contribuições.");
+        return;
+    }
+
+    detalhesArtigo.style.display = 'none';
+    editorArtigo.style.display = 'none';
+    historicoArtigo.style.display = 'none';
+    historicoContribuicoes.style.display = 'block';
+
+    listaMinhasContribuicoes.innerHTML = '<p style="text-align: center; color: #888;">Buscando suas contribuições...</p>';
+
+    try {
+        const querySnapshot = await db.collection('historicoEdicoes')
+            .where('editorId', '==', user.uid)
+            .orderBy('dataEdicao', 'desc')
+            .get();
+
+        if (querySnapshot.empty) {
+            listaMinhasContribuicoes.innerHTML = '<p style="text-align: center; color: #888;">Você ainda não fez nenhuma contribuição.</p>';
+            return;
+        }
+
+        let html = '';
+        querySnapshot.forEach(doc => {
+            const contribuicao = doc.data();
+            const dataFormatada = contribuicao.dataEdicao ? new Date(contribuicao.dataEdicao.seconds * 1000).toLocaleString() : 'Data desconhecida';
+            const tituloArtigo = contribuicao.titulo || 'Título não disponível';
+
+            html += `
+                <div class="contribuicao-item" data-id="${contribuicao.idArtigo}">
+                    <p><strong>Artigo:</strong> ${tituloArtigo}</p>
+                    <p><strong>Data da Edição:</strong> ${dataFormatada}</p>
+                    <p><strong>Resumo:</strong> ${contribuicao.sumarioEdicao || 'Nenhum'}</p>
+                </div>
+            `;
+        });
+        listaMinhasContribuicoes.innerHTML = html;
+
+        listaMinhasContribuicoes.querySelectorAll('.contribuicao-item').forEach(item => {
+            item.addEventListener('click', async (e) => {
+                const artigoId = e.currentTarget.getAttribute('data-id');
+                try {
+                    const doc = await db.collection('materias').doc(artigoId).get();
+                    if (doc.exists) {
+                        carregarDetalhesArtigo(doc.id, doc.data());
+                    } else {
+                        alert("O artigo original não foi encontrado.");
+                    }
+                } catch (error) {
+                    console.error("Erro ao buscar o artigo:", error);
+                    alert("Erro ao buscar o artigo.");
+                }
+            });
+        });
+
+    } catch (error) {
+        console.error("Erro ao buscar suas contribuições:", error);
+        listaMinhasContribuicoes.innerHTML = `<p style="text-align: center; color: #e74c3c;">Erro ao carregar suas contribuições: ${error.message}</p>`;
+    }
+}
+
+// --- Event Listeners para os botões e filtros ---
+contribuicoesButton.addEventListener('click', abrirHistoricoContribuicoes);
+
+voltarAoPainelBtn.addEventListener('click', () => {
+    historicoContribuicoes.style.display = 'none';
+    buscarArtigos(currentCategory, currentArmario);
+});
+
 categoryList.addEventListener('click', (e) => {
     e.preventDefault();
     const link = e.target.closest('a');
