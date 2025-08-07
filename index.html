@@ -239,6 +239,22 @@
             background-color: #0645ad;
             color: white;
         }
+        
+        /* Estilos de impressão */
+        @media print {
+            body > *:not(.detalhes-artigo) {
+                display: none !important;
+            }
+            .detalhes-artigo {
+                width: auto !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
+            }
+            .botoes-artigo-imprimivel {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -638,9 +654,10 @@ function carregarDetalhesArtigo(id, materia) {
             <p class="uid-display">UID do Documento: ${id}</p>
         </div>
         
-        <div style="margin-bottom: 1em;">
+        <div style="margin-bottom: 1em;" class="botoes-artigo-imprimivel">
             <button id="btn-editar-artigo" data-id="${id}" style="padding: 8px 15px; background-color: #0645ad; color: white; border: none; cursor: pointer; margin-right: 10px;">Editar</button>
             <button id="btn-ver-historico" data-id="${id}" style="padding: 8px 15px; background-color: #36c; color: white; border: none; cursor: pointer;">Histórico</button>
+            <button id="btn-imprimir-artigo" style="padding: 8px 15px; background-color: #555; color: white; border: none; cursor: pointer; margin-left: 10px;">Imprimir</button>
         </div>
 
         <h2>Informações Adicionais</h2>
@@ -654,6 +671,7 @@ function carregarDetalhesArtigo(id, materia) {
 
     document.getElementById('btn-editar-artigo').addEventListener('click', () => abrirEditor(id, materia));
     document.getElementById('btn-ver-historico').addEventListener('click', () => abrirHistorico(id));
+    document.getElementById('btn-imprimir-artigo').addEventListener('click', imprimirArtigo);
 }
 
 // --- Funções de Edição ---
@@ -844,7 +862,6 @@ function abrirPaginaUsuario() {
     novoArtigoSection.style.display = 'none';
     paginaUsuarioSection.style.display = 'block';
 
-    // Por padrão, abre a aba de Contribuições
     exibirAba('contribuicoes');
 }
 
@@ -970,6 +987,36 @@ function carregarMensagensDiscussao() {
         <p style="text-align: center; color: #888;">Nenhuma mensagem nova.</p>
     `;
 }
+
+// --- Funções de Impressão ---
+function imprimirArtigo() {
+    const articleToPrint = detalhesArtigo.innerHTML;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write('<html><head><title>Imprimir Artigo</title>');
+    
+    // Copia os estilos CSS relevantes para a nova janela
+    const styles = document.querySelectorAll('style, link[rel="stylesheet"]');
+    styles.forEach(style => {
+        printWindow.document.write(style.outerHTML);
+    });
+
+    printWindow.document.write('</head><body>');
+    printWindow.document.write('<div class="detalhes-artigo">' + articleToPrint + '</div>');
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+
+    printWindow.onload = () => {
+        const botoesParaOcultar = printWindow.document.querySelector('.botoes-artigo-imprimivel');
+        if (botoesParaOcultar) {
+            botoesParaOcultar.style.display = 'none';
+        }
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+    };
+}
+
 
 // --- Event Listeners para os botões e filtros ---
 perfilButton.addEventListener('click', abrirPaginaUsuario);
