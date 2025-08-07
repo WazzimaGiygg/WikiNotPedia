@@ -15,7 +15,7 @@
             color: #202122; /* Cor de texto padrão */
         }
 
-        /* Estilos do formulário de login (mantidos) */
+        /* Estilos do formulário de login (agora com login Google) */
         .login-container {
             display: none; /* Inicia oculto */
             flex-direction: column;
@@ -31,41 +31,38 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 350px;
+            text-align: center;
         }
         .login-form h2 {
-            text-align: center;
             color: #333;
             margin-bottom: 25px;
         }
-        .login-form label, .login-form input, .login-form button {
-            font-family: 'Noto Sans', sans-serif;
-            display: block;
-            width: 100%;
-            box-sizing: border-box;
-            margin-bottom: 10px;
+        .login-form p {
+            color: #54595d;
+            margin-bottom: 25px;
         }
-        .login-form input {
-            padding: 10px;
-            border: 1px solid #a2a9b1;
-            border-radius: 4px;
-        }
-        .login-form button {
-            padding: 12px;
-            background-color: #2a6f8b;
+        .google-btn {
+            background-color: #4285F4;
             color: white;
+            padding: 12px;
+            font-size: 1em;
+            cursor: pointer;
             border: none;
             border-radius: 4px;
-            cursor: pointer;
-            font-size: 1em;
-            margin-top: 15px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .login-form button:hover {
-            background-color: #0645ad;
+        .google-btn:hover {
+            background-color: #357ae8;
         }
-        .login-message {
-            color: #d73a49;
-            text-align: center;
-            margin-top: 15px;
+        .google-icon {
+            margin-right: 10px;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/2048px-Google_%22G%22_logo.svg.png') no-repeat center;
+            background-size: contain;
+            width: 24px;
+            height: 24px;
         }
 
         /* Estilos da barra de cabeçalho e do corpo principal */
@@ -84,7 +81,7 @@
             height: calc(100vh - 70px);
         }
 
-        /* Estilos da barra lateral (novo) */
+        /* Estilos da barra lateral */
         .sidebar-nav {
             width: 250px;
             background-color: #f8f9fa;
@@ -244,15 +241,12 @@
 
 <div class="login-container" id="login-section">
     <div class="login-form">
-        <h2>Entrar</h2>
-        <form id="login-form-element">
-            <label for="email">E-mail</label>
-            <input type="email" id="email" required>
-            <label for="password">Senha</label>
-            <input type="password" id="password" required>
-            <button type="submit">Entrar</button>
-            <p class="login-message" id="login-message"></p>
-        </form>
+        <h2>Entrar no Painel</h2>
+        <p>Use sua conta Google para continuar.</p>
+        <button id="google-login-btn" class="google-btn">
+            <div class="google-icon"></div>
+            Entrar com Google
+        </button>
     </div>
 </div>
 
@@ -340,8 +334,8 @@
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
 <script>
 // --- Configuração do Firebase ---
@@ -364,14 +358,15 @@ const auth = firebase.auth();
 const loginSection = document.getElementById('login-section');
 const loggedInHeader = document.getElementById('header-logged-in');
 const mainContainer = document.getElementById('content-split');
-const loginFormElement = document.getElementById('login-form-element');
-const loginMessage = document.getElementById('login-message');
 const logoutButton = document.getElementById('logout-button');
 const artigosList = document.getElementById('artigos-list');
 const detalhesArtigo = document.getElementById('detalhes-artigo');
 const artigosTitle = document.getElementById('artigos-title');
 const categoryList = document.getElementById('category-list');
 const armarioFilter = document.getElementById('armario-filter');
+
+// Elemento do botão de login do Google
+const googleLoginBtn = document.getElementById('google-login-btn');
 
 // Elementos de edição e histórico
 const editorArtigo = document.getElementById('editor-artigo');
@@ -380,7 +375,6 @@ const editTitulo = document.getElementById('edit-titulo');
 const editDescricao = document.getElementById('edit-descricao');
 const editSumario = document.getElementById('edit-sumario');
 const cancelarEdicaoBtn = document.getElementById('cancelar-edicao');
-
 const historicoArtigo = document.getElementById('historico-artigo');
 const listaHistorico = document.getElementById('lista-historico');
 const voltarDetalhesBtn = document.getElementById('voltar-detalhes');
@@ -390,9 +384,11 @@ let currentCategory = 'all';
 let currentArmario = 'Português';
 
 // --- Lógica de Autenticação ---
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
 auth.onAuthStateChanged(user => {
     if (user) {
-        console.log("Usuário logado:", user.email);
+        console.log("Usuário logado:", user.email, "UID:", user.uid);
         loginSection.style.display = 'none';
         loggedInHeader.style.display = 'flex';
         mainContainer.style.display = 'flex';
@@ -409,17 +405,12 @@ auth.onAuthStateChanged(user => {
     }
 });
 
-loginFormElement.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = loginFormElement.email.value;
-    const password = loginFormElement.password.value;
-    
+googleLoginBtn.addEventListener('click', async () => {
     try {
-        await auth.signInWithEmailAndPassword(email, password);
-        loginMessage.textContent = '';
+        await auth.signInWithPopup(googleProvider);
     } catch (error) {
-        loginMessage.textContent = 'Erro no login: ' + error.message;
-        console.error("Erro no login:", error);
+        console.error("Erro no login com Google:", error);
+        alert("Erro no login com Google: " + error.message);
     }
 });
 
@@ -486,7 +477,6 @@ async function buscarArtigos(categoria, armario) {
 }
 
 function carregarDetalhesArtigo(id, materia) {
-    // Esconde o formulário e o histórico
     editorArtigo.style.display = 'none';
     historicoArtigo.style.display = 'none';
     detalhesArtigo.style.display = 'block';
@@ -535,7 +525,6 @@ function carregarDetalhesArtigo(id, materia) {
         ${fontesHtml}
     `;
 
-    // Adiciona event listeners para os novos botões
     document.getElementById('btn-editar-artigo').addEventListener('click', () => abrirEditor(id, materia));
     document.getElementById('btn-ver-historico').addEventListener('click', () => abrirHistorico(id));
 }
@@ -545,16 +534,14 @@ function abrirEditor(id, materia) {
     detalhesArtigo.style.display = 'none';
     editorArtigo.style.display = 'block';
 
-    // Preenche o formulário com os dados atuais do artigo
     editTitulo.value = materia.titulo || '';
     editDescricao.value = materia.descricao || '';
-    editSumario.value = ''; // Limpa o campo de resumo para a nova edição
+    editSumario.value = '';
     formEdicaoArtigo.setAttribute('data-id', id);
     formEdicaoArtigo.setAttribute('data-conteudo-original', JSON.stringify(materia));
 }
 
 cancelarEdicaoBtn.addEventListener('click', () => {
-    // Volta para a visualização dos detalhes do artigo
     const id = formEdicaoArtigo.getAttribute('data-id');
     const materia = JSON.parse(formEdicaoArtigo.getAttribute('data-conteudo-original'));
     carregarDetalhesArtigo(id, materia);
@@ -571,11 +558,10 @@ formEdicaoArtigo.addEventListener('submit', async (e) => {
         return;
     }
 
-    // Dados da nova versão do artigo
     const novaVersaoArtigo = {
         titulo: editTitulo.value,
         descricao: editDescricao.value,
-        setor: materiaOriginal.setor, // Mantém os campos que não estão sendo editados
+        setor: materiaOriginal.setor,
         armario: materiaOriginal.armario,
         arquivo: materiaOriginal.arquivo,
         fontes: materiaOriginal.fontes,
@@ -586,23 +572,19 @@ formEdicaoArtigo.addEventListener('submit', async (e) => {
     };
     
     const historicoData = {
-        ...novaVersaoArtigo, // Inclui todos os dados da nova versão
+        ...novaVersaoArtigo,
         idArtigo: id,
         dataEdicao: novaVersaoArtigo.ultimaEdicao,
         sumarioEdicao: editSumario.value || 'Edição sem resumo.'
     };
 
     try {
-        // 1. Adiciona um novo documento à coleção de histórico com a nova versão
         await db.collection('historicoEdicoes').add(historicoData);
-        
-        // 2. Atualiza o documento principal na coleção 'materias' com a nova versão
         await db.collection('materias').doc(id).update(novaVersaoArtigo);
 
         alert("Artigo atualizado com sucesso!");
-        // Recarrega os detalhes do artigo com os novos dados
         carregarDetalhesArtigo(id, novaVersaoArtigo);
-        buscarArtigos(currentCategory, currentArmario); // Recarrega a lista para mostrar a mudança
+        buscarArtigos(currentCategory, currentArmario);
     } catch (error) {
         console.error("Erro ao salvar a edição:", error);
         alert("Erro ao salvar a edição: " + error.message);
@@ -651,7 +633,6 @@ async function abrirHistorico(id) {
 }
 
 voltarDetalhesBtn.addEventListener('click', () => {
-    // Volta para os detalhes do artigo atual
     const id = artigoSelecionado.getAttribute('data-id');
     db.collection('materias').doc(id).get().then(doc => {
         if (doc.exists) {
@@ -683,7 +664,6 @@ armarioFilter.addEventListener('change', (e) => {
     currentArmario = e.target.value;
     buscarArtigos(currentCategory, currentArmario);
 });
-
 </script>
 </body>
 </html>
