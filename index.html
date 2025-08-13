@@ -1,2233 +1,1199 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo - WZZM</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans">
-    <style>
-        /* Estilos base do corpo e do contêiner */
-        body {
-            font-family: 'Noto Sans', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f8f9fa;
-            color: #202122;
-        }
-
-        /* Estilos do formulário de login (agora com login Google) */
-        .login-container {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #f8f9fa;
-        }
-        .login-form {
-            background-color: #ffffff;
-            padding: 40px;
-            border: 1px solid #a2a9b1;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 350px;
-            text-align: center;
-        }
-        .login-form h2 {
-            color: #333;
-            margin-bottom: 25px;
-        }
-        .login-form p {
-            color: #54595d;
-            margin-bottom: 25px;
-        }
-        .google-btn {
-            background-color: #4285F4;
-            color: white;
-            padding: 12px;
-            font-size: 1em;
-            cursor: pointer;
-            border: none;
-            border-radius: 4px;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .google-btn:hover {
-            background-color: #357ae8;
-        }
-        .google-icon {
-            margin-right: 10px;
-            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/2048px-Google_%22G%22_logo.svg.png') no-repeat center;
-            background-size: contain;
-            width: 24px;
-            height: 24px;
-        }
-
-        /* Estilos da barra de cabeçalho e do corpo principal */
-        .header-logged-in {
-            display: none;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 30px;
-            background-color: #343a40;
-            color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .main-container {
-            display: none;
-            flex-direction: row;
-            height: calc(100vh - 70px);
-        }
-
-        /* Estilos da barra lateral */
-        .sidebar-nav {
-            width: 250px;
-            background-color: #f8f9fa;
-            border-right: 1px solid #a2a9b1;
-            padding: 1em 0;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-            overflow-y: auto;
-        }
-        .sidebar-nav h2 {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #54595d;
-            padding: 0 1em;
-            margin-bottom: 0.5em;
-            border-bottom: 1px solid #a2a9b1;
-            padding-bottom: 0.5em;
-        }
-        .sidebar-nav ul {
-            list-style: none;
-            padding: 0 0.5em;
-            margin: 0;
-        }
-        .sidebar-nav li {
-            margin-bottom: 0.25em;
-        }
-        .sidebar-nav a {
-            display: block;
-            padding: 0.5em 1em;
-            color: #0645ad;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: background-color 0.2s;
-        }
-        .sidebar-nav a:hover {
-            background-color: #eaecf0;
-            text-decoration: underline;
-        }
-        .sidebar-nav a.active {
-            background-color: #eaf3ff;
-            font-weight: bold;
-        }
-
-        /* Estilos do contêiner de conteúdo principal */
-        .content-main {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: row;
-            overflow: hidden;
-        }
-        .lista-artigos-pane {
-            width: 30%;
-            background-color: #ffffff;
-            border-right: 1px solid #ddd;
-            padding: 1em;
-            overflow-y: auto;
-        }
-        .lista-artigos-pane h2 {
-            font-size: 1.5em;
-            color: #333;
-            text-align: center;
-            border-bottom: 1px solid #a2a9b1;
-            padding-bottom: 0.5em;
-        }
-        .artigo-item, .contribuicao-item {
-            padding: 1em;
-            border-bottom: 1px solid #eaecf0;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .artigo-item:hover, .artigo-item.ativo, .contribuicao-item:hover {
-            background-color: #eaf3ff;
-        }
-        .artigo-item h3 {
-            margin: 0 0 5px 0;
-            color: #0645ad;
-            font-size: 1.1em;
-        }
-        .artigo-item p, .contribuicao-item p {
-            font-size: 0.9em;
-            color: #54595d;
-            margin: 0;
-        }
-        
-        /* Estilos do painel de detalhes (inspirado na Wikipédia) */
-        .detalhes-artigo, #editor-artigo, #historico-artigo, #novo-artigo, #pagina-usuario {
-            width: 70%;
-            padding: 2em;
-            overflow-y: auto;
-            background-color: #ffffff;
-            line-height: 1.6;
-        }
-        .detalhes-artigo .article-header {
-            border-bottom: 1px solid #a2a9b1;
-            margin-bottom: 1em;
-            padding-bottom: 0.5em;
-        }
-        .detalhes-artigo h1 {
-            color: #000;
-            font-size: 2em;
-            margin: 0;
-        }
-        .detalhes-artigo h2 {
-            font-size: 1.5em;
-            margin-top: 1.5em;
-            color: #333;
-            border-bottom: 1px solid #a2a9b1;
-            padding-bottom: 0.25em;
-        }
-        .detalhes-artigo .uid-display {
-            font-size: 0.8em;
-            font-style: italic;
-            color: #72777d;
-            margin-top: 0.5em;
-        }
-        .detalhes-artigo .descricao-container {
-            margin-top: 1em;
-        }
-        .detalhes-artigo .fontes-container {
-            margin-top: 2em;
-            border-top: 1px solid #a2a9b1;
-            padding-top: 1em;
-        }
-        .detalhes-artigo .fontes-container p {
-            font-weight: bold;
-            color: #54595d;
-            margin-bottom: 0.5em;
-        }
-        .detalhes-artigo .fontes-container ul {
-            list-style-type: disc;
-            padding-left: 1.5em;
-        }
-        .detalhes-artigo .fontes-container li {
-            margin-bottom: 0.25em;
-        }
-
-        /* Estilos para o editor de artigos */
-        #form-edicao-artigo label, #form-novo-artigo label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        #form-edicao-artigo input, #form-edicao-artigo textarea, #form-novo-artigo input, #form-novo-artigo textarea, #form-novo-artigo select, #pagina-pessoal-textarea {
-            border: 1px solid #a2a9b1;
-            border-radius: 4px;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        #form-edicao-artigo textarea, #form-novo-artigo textarea, #pagina-pessoal-textarea {
-            resize: vertical;
-        }
-        #form-edicao-artigo button, #form-novo-artigo button, .user-tabs button, #salvar-pagina-pessoal, #cancelar-pagina-pessoal {
-            margin-right: 10px;
-        }
-        .user-tabs .tab-button.active {
-            background-color: #0645ad;
-            color: white;
-        }
-        
-        /* Estilos de impressão */
-        @media print {
-            body > *:not(.detalhes-artigo) {
-                display: none !important;
-            }
-            .detalhes-artigo {
-                width: auto !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                overflow: visible !important;
-            }
-            .botoes-artigo-imprimivel {
-                display: none !important;
-            }
-        }
-    </style>
-</head>
-<body>
-
-<div class="login-container" id="login-section">
-    <div class="login-form">
-        <h2>Entrar no Painel</h2>
-        <p>Use sua conta Google para continuar.</p>
-        <button id="google-login-btn" class="google-btn">
-            <div class="google-icon"></div>
-            Entrar com Google
-        </button>
-    </div>
-</div>
-
-<div id="logged-in-container">
-    <div class="header-logged-in" id="header-logged-in">
-        <h1>Wiki NOT Pédia</h1>
-        <div>
-            <button id="novo-artigo-button" style="padding: 8px 15px; background-color: #2a9d8f; color: white; border: none; cursor: pointer; margin-right: 10px;">Novo Artigo</button>
-            <button id="perfil-button" style="padding: 8px 15px; background-color: #54595d; color: white; border: none; cursor: pointer; margin-right: 10px;">Meu Perfil</button>
-            <button id="logout-button">Sair</button>
-        </div>
-    </div>
-    
-    <div class="main-container" id="content-split">
-        
-        <div class="sidebar-nav">
-            <h2>Categorias</h2>
-            <ul id="category-list">
-                <li><a href="#" data-category="Arte">Arte</a></li>
-                <li><a href="#" data-category="Biografias">Biografias</a></li>
-                <li><a href="#" data-category="Ciência">Ciência</a></li>
-                <li><a href="#" data-category="Filosofia">Filosofia</a></li>
-                <li><a href="#" data-category="Geografia">Geografia</a></li>
-                <li><a href="#" data-category="História">História</a></li>
-                <li><a href="#" data-category="Matemática">Matemática</a></li>
-                <li><a href="#" data-category="Sociedade">Sociedade</a></li>
-                <li><a href="#" data-category="Tecnologia">Tecnologia</a></li>
-                <li style="margin-top: 1em; border-top: 1px solid #a2a9b1;">
-                    <a href="#" data-category="all" class="active">Todos os Artigos</a>
-                </li>
-            </ul>
-
-            <div style="padding: 0 1em; margin-top: 1.5em;">
-                <h2>Idioma</h2>
-                <select id="armario-filter" style="width: 100%; padding: 8px; font-size: 1em; border: 1px solid #a2a9b1; border-radius: 4px;">
-                    <option value="all">Todos os Idiomas</option>
-                    <option value="Português" selected>Português</option>
-                    <option value="Inglês">Inglês</option>
-                    <option value="Espanhol">Espanhol</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="content-main">
-            <div class="lista-artigos-pane">
-                <h2 id="artigos-title">Artigos Recentes</h2>
-                <div id="artigos-list">
-                    <p style="text-align: center; color: #666;">Carregando...</p>
-                </div>
-            </div>
-
-            <div class="detalhes-artigo" id="detalhes-artigo">
-                <p style="text-align: center; color: #888;">Selecione um artigo na lista para ver os detalhes.</p>
-            </div>
-
-            <div id="editor-artigo" style="display: none; padding: 2em; overflow-y: auto; background-color: #ffffff; line-height: 1.6;">
-                <form id="form-edicao-artigo">
-                    <h2>Editar Artigo</h2>
-
-                    <div style="margin-bottom: 1em;">
-                        <label for="edit-titulo">Título</label>
-                        <input type="text" id="edit-titulo" required style="width: 100%; padding: 8px; margin-top: 5px;">
-                    </div>
-
-                    <div style="margin-bottom: 1em;">
-                        <label for="edit-descricao">Descrição</label>
-                        <textarea id="edit-descricao" rows="15" style="width: 100%; padding: 8px; margin-top: 5px;"></textarea>
-                    </div>
-                    
-                    <div style="margin-bottom: 1em;">
-                        <label for="edit-sumario">Resumo da Edição (para o Histórico)</label>
-                        <input type="text" id="edit-sumario" required style="width: 100%; padding: 8px; margin-top: 5px;">
-                    </div>
-
-                    <button type="submit" style="padding: 10px 20px; background-color: #2a6f8b; color: white; border: none; cursor: pointer;">Salvar Edição</button>
-                    <button type="button" id="cancelar-edicao" style="padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Cancelar</button>
-                </form>
-            </div>
-
-            <div id="historico-artigo" style="display: none; padding: 2em; overflow-y: auto; background-color: #ffffff; line-height: 1.6;">
-                <h2 style="border-bottom: 1px solid #a2a9b1; padding-bottom: 0.5em;">Histórico de Edições</h2>
-                <div id="lista-historico">
-                    <p style="text-align: center; color: #888;">Carregando histórico...</p>
-                </div>
-                <button type="button" id="voltar-detalhes" style="margin-top: 1em; padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Voltar</button>
-            </div>
-
-            <div id="novo-artigo" style="display: none; width: 70%; padding: 2em; overflow-y: auto; background-color: #ffffff; line-height: 1.6;">
-                <form id="form-novo-artigo">
-                    <h2>Criar Novo Artigo</h2>
-
-                    <div style="margin-bottom: 1em;">
-                        <label for="new-titulo">Título</label>
-                        <input type="text" id="new-titulo" required style="width: 100%; padding: 8px; margin-top: 5px;">
-                    </div>
-
-                    <div style="margin-bottom: 1em;">
-                        <label for="new-setor">Setor / Categoria</label>
-                        <select id="new-setor" required style="width: 100%; padding: 8px; margin-top: 5px;">
-                            <option value="">Selecione uma categoria</option>
-                            <option value="Arte">Arte</option>
-                            <option value="Biografias">Biografias</option>
-                            <option value="Ciência">Ciência</option>
-                            <option value="Filosofia">Filosofia</option>
-                            <option value="Geografia">Geografia</option>
-                            <option value="História">História</option>
-                            <option value="Matemática">Matemática</option>
-                            <option value="Sociedade">Sociedade</option>
-                            <option value="Tecnologia">Tecnologia</option>
-                        </select>
-                    </div>
-
-                    <div style="margin-bottom: 1em;">
-                        <label for="new-armario">Idioma</label>
-                        <select id="new-armario" required style="width: 100%; padding: 8px; margin-top: 5px;">
-                            <option value="">Selecione um idioma</option>
-                            <option value="Português">Português</option>
-                            <option value="Inglês">Inglês</option>
-                            <option value="Espanhol">Espanhol</option>
-                        </select>
-                    </div>
-
-                    <div style="margin-bottom: 1em;">
-                        <label for="new-descricao">Descrição</label>
-                        <textarea id="new-descricao" rows="15" required style="width: 100%; padding: 8px; margin-top: 5px;"></textarea>
-                    </div>
-                    
-                    <button type="submit" style="padding: 10px 20px; background-color: #2a9d8f; color: white; border: none; cursor: pointer;">Criar Artigo</button>
-                    <button type="button" id="cancelar-novo-artigo" style="padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Cancelar</button>
-                </form>
-            </div>
-
-            <div id="pagina-usuario" style="display: none; width: 70%; padding: 2em; overflow-y: auto; background-color: #ffffff; line-height: 1.6;">
-                <div class="user-header" style="border-bottom: 1px solid #a2a9b1; padding-bottom: 0.5em; margin-bottom: 1.5em;">
-                    <h2 id="user-display-name">Carregando Perfil...</h2>
-                </div>
-
-                <div class="user-tabs" style="margin-bottom: 1.5em;">
-                    <button class="tab-button" data-tab="contribuicoes" style="padding: 10px 15px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Minhas Contribuições</button>
-                    <button class="tab-button" data-tab="pagina-pessoal" style="padding: 10px 15px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Página Pessoal</button>
-                    <button class="tab-button" data-tab="discussao" style="padding: 10px 15px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Discussão</button>
-                </div>
-                
-                <div id="contribuicoes-tab" class="tab-content" style="display: none;">
-                    <h3 style="margin-top: 0;">Lista de Contribuições</h3>
-                    <div id="lista-minhas-contribuicoes">
-                        <p style="text-align: center; color: #888;">Carregando suas contribuições...</p>
-                    </div>
-                </div>
-
-                <div id="pagina-pessoal-tab" class="tab-content" style="display: none;">
-                    <h3 style="margin-top: 0;">Página Pessoal</h3>
-                    <div id="pagina-pessoal-editor" style="margin-bottom: 1em;">
-                        <textarea id="pagina-pessoal-textarea" rows="15" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #a2a9b1;"></textarea>
-                        <button id="salvar-pagina-pessoal" style="margin-top: 10px; padding: 10px 20px; background-color: #2a9d8f; color: white; border: none; cursor: pointer;">Salvar</button>
-                        <button id="cancelar-pagina-pessoal" style="margin-top: 10px; padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Cancelar</button>
-                    </div>
-                    <div id="pagina-pessoal-viewer" style="border: 1px solid #ccc; padding: 1em; background-color: #f9f9f9; display: none;">
-                        <p id="pagina-pessoal-content"></p>
-                    </div>
-                </div>
-                
-                <div id="discussao-tab" class="tab-content" style="display: none;">
-                    <h3 style="margin-top: 0;">Mensagens e Notificações</h3>
-                    <div id="lista-mensagens">
-                        <p style="text-align: center; color: #888;">Nenhuma mensagem nova.</p>
-                    </div>
-                </div>
-
-                <button type="button" id="voltar-ao-painel-perfil" style="margin-top: 2em; padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Voltar ao Painel</button>
-            </div>
-            
-        </div>
-    </div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carregando...</title>
+<link rel="icon" href="favicom.png" type="image/x-icon">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.min.css">
+<style id="custom-app-css">
+/* Este será o local onde o CSS dos aplicativos do usuário será injetado */
+</style>
+<style id="custom-theme-color">
+/* A cor do tema será injetada aqui pelo JavaScript */
+</style>
+<style>
+/* Seus estilos CSS existentes aqui */
+body {
+display: flex;
+flex-direction: column;
+min-height: 100vh;
+margin: 0;
+font-family: 'Roboto', sans-serif;
+background-color: #f5f5f5;
+}
+.mdl-layout__content {
+flex-grow: 1;
+display: flex;
+position: relative; /* Adicionado para posicionamento absoluto */
+padding: 0;
+}
+.page-content {
+flex-grow: 1;
+display: flex;
+flex-direction: column;
+}
+.mdl-layout__drawer .mdl-navigation .mdl-navigation__link {
+color: #424242;
+}
+.mdl-layout__drawer .mdl-navigation .mdl-navigation__link[data-requires-auth="true"] {
+color: #9e9e9e;
+pointer-events: none;
+}
+/* Estilo para o novo iframe de conteúdo em tela cheia */
+#main-content-frame {
+flex-grow: 1;
+border: none;
+width: 100%;
+height: 100%;
+position: absolute;
+top: 0;
+left: 0;
+z-index: 0; /* z-index para ficar no fundo */
+}
+/* Estilo para o contêiner das janelas flutuantes */
+#window-container {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+z-index: 1000; /* Garante que as janelas fiquem por cima */
+pointer-events: none; /* Permite cliques passarem para o iframe de fundo */
+}
+#window-container > .floating-window {
+pointer-events: auto; /* Reativa os cliques para as janelas */
+}
+/* Estilo para as janelas flutuantes */
+.floating-window {
+display: flex;
+flex-direction: column;
+position: absolute;
+min-width: 300px;
+min-height: 200px;
+background-color: white;
+box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+border-radius: 8px;
+overflow: hidden;
+resize: both;
+transition: transform 0.2s ease-out;
+border: 1px solid #ccc;
+top: 50px;
+left: 50px;
+z-index: 1000;
+}
+.window-header {
+cursor: grab;
+padding: 8px 12px;
+background-color: #f5f5f5;
+border-bottom: 1px solid #ddd;
+display: flex;
+align-items: center;
+justify-content: space-between;
+}
+.window-header:active {
+cursor: grabbing;
+}
+.window-header span {
+font-weight: bold;
+}
+.window-controls button {
+border: none;
+background: none;
+font-size: 24px;
+cursor: pointer;
+color: #666;
+line-height: 1;
+padding: 0 8px;
+}
+.window-controls button:hover {
+color: #333;
+}
+.window-body {
+flex-grow: 1;
+overflow: hidden;
+}
+.window-body iframe {
+width: 100%;
+height: 100%;
+border: none;
+}
+.mdl-layout__header-row {
+padding: 0 16px;
+}
+.mdl-layout__header-row .mdl-navigation {
+display: flex;
+align-items: center;
+}
+.mdl-layout__header-row .mdl-navigation .mdl-navigation__link {
+padding: 0 12px;
+}
+/* Estilo para a imagem de perfil */
+#user-profile-pic {
+width: 32px;
+height: 32px;
+border-radius: 50%;
+margin-left: 8px;
+vertical-align: middle;
+display: none;
+}
+/* Estilos para o popup de apps */
+#google-apps-button {
+display: none;
+}
+#google-apps-popup {
+display: none;
+position: absolute;
+top: 48px; /* Altura do header */
+right: 0;
+width: 300px;
+background-color: white;
+border-radius: 8px;
+box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+z-index: 1000;
+padding: 10px;
+box-sizing: border-box;
+}
+#google-apps-popup h4 {
+margin-top: 0;
+margin-bottom: 10px;
+color: #3f51b5;
+text-align: center;
+}
+#app-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 10px;
+padding: 10px;
+}
+.app-item {
+display: flex;
+flex-direction: column;
+align-items: center;
+text-align: center;
+cursor: pointer;
+padding: 8px;
+border-radius: 4px;
+transition: background-color 0.3s;
+}
+.app-item:hover {
+background-color: #f0f0f0;
+}
+.app-item img {
+width: 48px;
+height: 48px;
+margin-bottom: 5px;
+}
+.app-item span {
+font-size: 0.8em;
+color: #555;
+}
+/* Mensagens de acesso */
+#access-denied-message, #banned-message {
+display: none;
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+background-color: #ffe0b2;
+border: 1px solid #ffb74d;
+padding: 20px;
+border-radius: 8px;
+box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+text-align: center;
+color: #e65100;
+font-weight: bold;
+z-index: 1001;
+}
+/* --- ESTILOS PARA NOTÍCIAS (Botão e Popup) --- */
+#news-button {
+margin-right: 8px;
+display: none;
+}
+#news-center-popup {
+display: none;
+position: absolute;
+top: 48px;
+right: 0;
+width: 400px;
+max-height: 80vh;
+background-color: white;
+border-radius: 8px;
+box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+z-index: 998;
+flex-direction: column;
+overflow: hidden;
+}
+#news-popup-header {
+background-color: #3f51b5;
+color: white;
+padding: 10px 15px;
+border-top-left-radius: 8px;
+border-top-right-radius: 8px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+font-weight: bold;
+font-size: 16px;
+}
+#news-popup-header .close-button {
+background: none;
+border: none;
+color: white;
+font-size: 24px;
+cursor: pointer;
+padding: 0;
+}
+#news-popup-content {
+flex-grow: 1;
+overflow-y: auto;
+padding: 15px;
+}
+#news-popup-footer {
+padding: 10px 15px;
+border-top: 1px solid #eee;
+text-align: center;
+}
+#news-popup-footer button {
+width: 100%;
+}
+/* Estilos para os itens de notícia dentro do popup (adaptados do seu código original) */
+.news-popup-item {
+background-color: #f9f9f9;
+border: 1px solid #e0e0e0;
+border-radius: 4px;
+padding: 15px;
+margin-bottom: 15px;
+box-shadow: 0 1px 1px 0 rgba(0,0,0,.08);
+}
+.news-popup-item h3 {
+margin-top: 0;
+color: #5c6bc0;
+}
+.news-popup-item p {
+color: #555;
+line-height: 1.5;
+}
+.news-popup-item small {
+font-size: 0.8em;
+color: #888;
+display: block;
+margin-top: 10px;
+}
+.news-popup-item img {
+max-width: 100%;
+height: auto;
+margin-top: 10px;
+border-radius: 4px;
+}
+</style>
 <script>
-// --- Configuração do Firebase ---
-const firebaseConfig = {
-    apiKey: "AIzaSyB9GkSqTIZ0kbVsba_WOdQeVAETrF9qna0", 
-    authDomain: "wzzm-ce3fc.firebaseapp.com",
-    projectId: "wzzm-ce3fc",
-    storageBucket: "wzzm-ce3fc.appspot.com",
-    messagingSenderId: "249427877153",
-    appId: "1:249427877153:web:0e4297294794a5aadeb260",
-    measurementId: "G-PLKNZNFCQ8"
-};
+// Script de redirecionamento para navegadores não-Chromium
+(function() {
+const userAgent = navigator.userAgent;
+const isChromium = !!window.chrome && userAgent.indexOf('Chrome') > -1 && userAgent.indexOf('Edg') === -1 && userAgent.indexOf('OPR') === -1;
 
-// Inicialize o Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-// Elementos da interface
-const loginSection = document.getElementById('login-section');
-const loggedInHeader = document.getElementById('header-logged-in');
-const mainContainer = document.getElementById('content-split');
-const logoutButton = document.getElementById('logout-button');
-const artigosList = document.getElementById('artigos-list');
-const detalhesArtigo = document.getElementById('detalhes-artigo');
-const artigosTitle = document.getElementById('artigos-title');
-const categoryList = document.getElementById('category-list');
-const armarioFilter = document.getElementById('armario-filter');
-const googleLoginBtn = document.getElementById('google-login-btn');
-
-// Elementos de edição e histórico
-const editorArtigo = document.getElementById('editor-artigo');
-const formEdicaoArtigo = document.getElementById('form-edicao-artigo');
-const editTitulo = document.getElementById('edit-titulo');
-const editDescricao = document.getElementById('edit-descricao');
-const editSumario = document.getElementById('edit-sumario');
-const cancelarEdicaoBtn = document.getElementById('cancelar-edicao');
-const historicoArtigo = document.getElementById('historico-artigo');
-const listaHistorico = document.getElementById('lista-historico');
-const voltarDetalhesBtn = document.getElementById('voltar-detalhes');
-
-// NOVOS ELEMENTOS: Criação e Histórico de Contribuições
-const novoArtigoButton = document.getElementById('novo-artigo-button');
-const novoArtigoSection = document.getElementById('novo-artigo');
-const formNovoArtigo = document.getElementById('form-novo-artigo');
-const newTitulo = document.getElementById('new-titulo');
-const newSetor = document.getElementById('new-setor');
-const newArmario = document.getElementById('new-armario');
-const newDescricao = document.getElementById('new-descricao');
-const cancelarNovoArtigoBtn = document.getElementById('cancelar-novo-artigo');
-
-// NOVOS ELEMENTOS: Página do Usuário
-const perfilButton = document.getElementById('perfil-button');
-const paginaUsuarioSection = document.getElementById('pagina-usuario');
-const userDisplayName = document.getElementById('user-display-name');
-const contribuicoesTab = document.getElementById('contribuicoes-tab');
-const paginaPessoalTab = document.getElementById('pagina-pessoal-tab');
-const discussaoTab = document.getElementById('discussao-tab');
-const paginaPessoalTextarea = document.getElementById('pagina-pessoal-textarea');
-const paginaPessoalViewer = document.getElementById('pagina-pessoal-viewer');
-const paginaPessoalContent = document.getElementById('pagina-pessoal-content');
-const salvarPaginaPessoalBtn = document.getElementById('salvar-pagina-pessoal');
-const cancelarPaginaPessoalBtn = document.getElementById('cancelar-pagina-pessoal');
-const voltarAoPainelPerfilBtn = document.getElementById('voltar-ao-painel-perfil');
-const listaMinhasContribuicoes = document.getElementById('lista-minhas-contribuicoes');
-const listaMensagens = document.getElementById('lista-mensagens');
-const tabButtons = document.querySelectorAll('.tab-button');
-
-
-let artigoSelecionado = null;
-let currentCategory = 'all';
-let currentArmario = 'Português';
-
-// --- Lógica de Autenticação ---
-const googleProvider = new firebase.auth.GoogleAuthProvider();
-
-auth.onAuthStateChanged(user => {
-    if (user) {
-        console.log("Usuário logado:", user.email, "UID:", user.uid);
-        loginSection.style.display = 'none';
-        loggedInHeader.style.display = 'flex';
-        mainContainer.style.display = 'flex';
-        userDisplayName.textContent = user.displayName || user.email;
-        buscarArtigos(currentCategory, currentArmario);
-    } else {
-        console.log("Nenhum usuário logado.");
-        loginSection.style.display = 'flex';
-        loggedInHeader.style.display = 'none';
-        mainContainer.style.display = 'none';
-        artigosList.innerHTML = '<p style="text-align: center; color: #666;">Carregando...</p>';
-        detalhesArtigo.innerHTML = '<p style="text-align: center; color: #888;">Selecione um artigo na lista para ver os detalhes.</p>';
-        editorArtigo.style.display = 'none';
-        historicoArtigo.style.display = 'none';
-        novoArtigoSection.style.display = 'none';
-        paginaUsuarioSection.style.display = 'none';
-    }
-});
-
-googleLoginBtn.addEventListener('click', async () => {
-    try {
-        await auth.signInWithPopup(googleProvider);
-    } catch (error) {
-        console.error("Erro no login com Google:", error);
-        alert("Erro no login com Google: " + error.message);
-    }
-});
-
-logoutButton.addEventListener('click', () => {
-    auth.signOut();
-});
-
-// --- Lógica de busca e exibição dos artigos ---
-async function buscarArtigos(categoria, armario) {
-    artigosList.innerHTML = '<p style="text-align: center; color: #666;">Carregando...</p>';
-    detalhesArtigo.style.display = 'none';
-    editorArtigo.style.display = 'none';
-    historicoArtigo.style.display = 'none';
-    novoArtigoSection.style.display = 'none';
-    paginaUsuarioSection.style.display = 'none';
-
-    let query = db.collection('materias').orderBy('createdAt', 'desc').limit(10);
-    
-    if (categoria && categoria !== 'all') {
-        query = query.where('setor', '==', categoria);
-        artigosTitle.textContent = `Artigos de ${categoria}`;
-    } else {
-        artigosTitle.textContent = `Todos os Artigos`;
-    }
-
-    if (armario && armario !== 'all') {
-        query = query.where('armario', '==', armario);
-    }
-    
-    try {
-        const querySnapshot = await query.get();
-        artigosList.innerHTML = '';
-        
-        if (querySnapshot.empty) {
-            artigosList.innerHTML = `<p style="text-align: center; color: #666;">Nenhum artigo encontrado.</p>`;
-            return;
-        }
-        
-        querySnapshot.forEach(doc => {
-            const materia = doc.data();
-            const artigoItem = document.createElement('div');
-            artigoItem.className = 'artigo-item';
-            artigoItem.setAttribute('data-id', doc.id);
-            
-            artigoItem.innerHTML = `
-                <h3>${materia.titulo}</h3>
-                <p>ID: ${doc.id}</p>
-            `;
-            
-            artigoItem.addEventListener('click', () => {
-                carregarDetalhesArtigo(doc.id, materia);
-                if (artigoSelecionado) {
-                    artigoSelecionado.classList.remove('ativo');
-                }
-                artigoItem.classList.add('ativo');
-                artigoSelecionado = artigoItem;
-            });
-            
-            artigosList.appendChild(artigoItem);
-        });
-        
-    } catch (error) {
-        console.error("Erro ao buscar artigos: ", error);
-        artigosList.innerHTML = '<p style="text-align: center; color: #e74c3c;">Erro: ' + error.message + '</p>';
-    }
+if (!isChromium) {
+window.location.href = './notchromium';
 }
+})();
 
-function carregarDetalhesArtigo(id, materia) {
-    editorArtigo.style.display = 'none';
-    historicoArtigo.style.display = 'none';
-    novoArtigoSection.style.display = 'none';
-    paginaUsuarioSection.style.display = 'none';
-    detalhesArtigo.style.display = 'block';
-
-    let fontesHtml = '';
-    if (materia.fontes && materia.fontes.length > 0) {
-        const fontesLista = materia.fontes.map(fonte => {
-            const isUrl = fonte.startsWith('http://') || fonte.startsWith('https://');
-            if (isUrl) {
-                return `<li><a href="${fonte}" target="_blank">${fonte}</a></li>`;
-            } else {
-                return `<li>${fonte}</li>`;
-            }
-        }).join('');
-        
-        fontesHtml = `
-            <div class="fontes-container">
-                <p>Fontes:</p>
-                <ul>${fontesLista}</ul>
-            </div>
-        `;
-    }
-    
-    let infoHtml = ``;
-    if (materia.setor) infoHtml += `<p><strong>Setor:</strong> ${materia.setor}</p>`;
-    if (materia.arquivo) infoHtml += `<p><strong>Arquivo:</strong> ${materia.arquivo}</p>`;
-    if (materia.armario) infoHtml += `<p><strong>Armário:</strong> ${materia.armario}</p>`;
-    
-    detalhesArtigo.innerHTML = `
-        <div class="article-header">
-            <h1>${materia.titulo}</h1>
-            <p class="uid-display">UID do Documento: ${id}</p>
-        </div>
-        
-        <div style="margin-bottom: 1em;" class="botoes-artigo-imprimivel">
-            <button id="btn-editar-artigo" data-id="${id}" style="padding: 8px 15px; background-color: #0645ad; color: white; border: none; cursor: pointer; margin-right: 10px;">Editar</button>
-            <button id="btn-ver-historico" data-id="${id}" style="padding: 8px 15px; background-color: #36c; color: white; border: none; cursor: pointer;">Histórico</button>
-            <button id="btn-imprimir-artigo" style="padding: 8px 15px; background-color: #555; color: white; border: none; cursor: pointer; margin-left: 10px;">Imprimir</button>
-        </div>
-
-        <h2>Informações Adicionais</h2>
-        <div class="descricao-container">${infoHtml}</div>
-        
-        <h2>Descrição</h2>
-        <div class="descricao-container">${materia.descricao}</div>
-        
-        ${fontesHtml}
-    `;
-
-    document.getElementById('btn-editar-artigo').addEventListener('click', () => abrirEditor(id, materia));
-    document.getElementById('btn-ver-historico').addEventListener('click', () => abrirHistorico(id));
-    document.getElementById('btn-imprimir-artigo').addEventListener('click', imprimirArtigo);
+// Script de redirecionamento para mobile
+(function() {
+const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (window.innerWidth <= 768);
+if (isMobile) {
+window.location.href = './mobile/index.html';
 }
-
-// --- Funções de Edição ---
-function abrirEditor(id, materia) {
-    detalhesArtigo.style.display = 'none';
-    historicoArtigo.style.display = 'none';
-    novoArtigoSection.style.display = 'none';
-    paginaUsuarioSection.style.display = 'none';
-    editorArtigo.style.display = 'block';
-
-    editTitulo.value = materia.titulo || '';
-    editDescricao.value = materia.descricao || '';
-    editSumario.value = '';
-    formEdicaoArtigo.setAttribute('data-id', id);
-    formEdicaoArtigo.setAttribute('data-conteudo-original', JSON.stringify(materia));
-}
-
-cancelarEdicaoBtn.addEventListener('click', () => {
-    const id = formEdicaoArtigo.getAttribute('data-id');
-    const materia = JSON.parse(formEdicaoArtigo.getAttribute('data-conteudo-original'));
-    carregarDetalhesArtigo(id, materia);
-});
-
-formEdicaoArtigo.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const id = formEdicaoArtigo.getAttribute('data-id');
-    const materiaOriginal = JSON.parse(formEdicaoArtigo.getAttribute('data-conteudo-original'));
-    const user = auth.currentUser;
-    
-    if (!user) {
-        alert("Você precisa estar logado para editar.");
-        return;
-    }
-
-    const novaVersaoArtigo = {
-        titulo: editTitulo.value,
-        descricao: editDescricao.value,
-        setor: materiaOriginal.setor,
-        armario: materiaOriginal.armario,
-        arquivo: materiaOriginal.arquivo,
-        fontes: materiaOriginal.fontes,
-        createdAt: materiaOriginal.createdAt,
-        ultimaEdicao: firebase.firestore.FieldValue.serverTimestamp(),
-        editorId: user.uid,
-        editorEmail: user.email
-    };
-    
-    const historicoData = {
-        ...novaVersaoArtigo,
-        idArtigo: id,
-        dataEdicao: novaVersaoArtigo.ultimaEdicao,
-        sumarioEdicao: editSumario.value || 'Edição sem resumo.'
-    };
-
-    try {
-        await db.collection('historicoEdicoes').add(historicoData);
-        await db.collection('materias').doc(id).update(novaVersaoArtigo);
-
-        alert("Artigo atualizado com sucesso!");
-        carregarDetalhesArtigo(id, novaVersaoArtigo);
-        buscarArtigos(currentCategory, currentArmario);
-    } catch (error) {
-        console.error("Erro ao salvar a edição:", error);
-        alert("Erro ao salvar a edição: " + error.message);
-    }
-});
-
-// --- Funções de Histórico (individual do artigo) ---
-async function abrirHistorico(id) {
-    detalhesArtigo.style.display = 'none';
-    editorArtigo.style.display = 'none';
-    novoArtigoSection.style.display = 'none';
-    paginaUsuarioSection.style.display = 'none';
-    historicoArtigo.style.display = 'block';
-
-    listaHistorico.innerHTML = '<p style="text-align: center; color: #888;">Carregando histórico...</p>';
-
-    try {
-        const querySnapshot = await db.collection('historicoEdicoes')
-            .where('idArtigo', '==', id)
-            .orderBy('dataEdicao', 'desc')
-            .get();
-
-        if (querySnapshot.empty) {
-            listaHistorico.innerHTML = '<p style="text-align: center; color: #888;">Nenhuma edição encontrada.</p>';
-            return;
-        }
-
-        let html = '';
-        querySnapshot.forEach(doc => {
-            const edicao = doc.data();
-            const dataFormatada = edicao.dataEdicao ? new Date(edicao.dataEdicao.seconds * 1000).toLocaleString() : 'Data desconhecida';
-            const tituloDaEdicao = edicao.titulo || 'Título não disponível';
-
-            html += `
-                <div style="border-bottom: 1px solid #eaecf0; padding: 1em 0; margin-bottom: 1em;">
-                    <p><strong>Editor:</strong> ${edicao.editorEmail || 'Desconhecido'}</p>
-                    <p><strong>Data da Edição:</strong> ${dataFormatada}</p>
-                    <p><strong>Título:</strong> ${tituloDaEdicao}</p>
-                    <p><strong>Resumo:</strong> ${edicao.sumarioEdicao || 'Nenhum'}</p>
-                </div>
-            `;
-        });
-        listaHistorico.innerHTML = html;
-    } catch (error) {
-        console.error("Erro ao buscar o histórico:", error);
-        listaHistorico.innerHTML = `<p style="text-align: center; color: #e74c3c;">Erro ao carregar o histórico: ${error.message}</p>`;
-    }
-}
-
-voltarDetalhesBtn.addEventListener('click', () => {
-    const id = artigoSelecionado.getAttribute('data-id');
-    db.collection('materias').doc(id).get().then(doc => {
-        if (doc.exists) {
-            carregarDetalhesArtigo(doc.id, doc.data());
-        }
-    });
-});
-
-// --- Funções de Criação de Artigo ---
-function abrirFormNovoArtigo() {
-    detalhesArtigo.style.display = 'none';
-    editorArtigo.style.display = 'none';
-    historicoArtigo.style.display = 'none';
-    paginaUsuarioSection.style.display = 'none';
-    novoArtigoSection.style.display = 'block';
-
-    formNovoArtigo.reset();
-}
-
-formNovoArtigo.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const user = auth.currentUser;
-    if (!user) {
-        alert("Você precisa estar logado para criar um artigo.");
-        return;
-    }
-
-    const novoArtigoData = {
-        titulo: newTitulo.value,
-        descricao: newDescricao.value,
-        setor: newSetor.value,
-        armario: newArmario.value,
-        arquivo: 'nao-arquivado',
-        fontes: [], 
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        ultimaEdicao: firebase.firestore.FieldValue.serverTimestamp(),
-        editorId: user.uid,
-        editorEmail: user.email
-    };
-
-    try {
-        const novoDocRef = await db.collection('materias').add(novoArtigoData);
-        
-        const historicoData = {
-            ...novoArtigoData,
-            idArtigo: novoDocRef.id,
-            dataEdicao: novoArtigoData.ultimaEdicao,
-            sumarioEdicao: 'Criação do artigo.'
-        };
-        await db.collection('historicoEdicoes').add(historicoData);
-
-        alert("Artigo criado com sucesso!");
-        formNovoArtigo.reset();
-        buscarArtigos(currentCategory, currentArmario);
-    } catch (error) {
-        console.error("Erro ao criar o artigo:", error);
-        alert("Erro ao criar o artigo: " + error.message);
-    }
-});
-
-cancelarNovoArtigoBtn.addEventListener('click', () => {
-    novoArtigoSection.style.display = 'none';
-    buscarArtigos(currentCategory, currentArmario);
-});
-
-// --- Funções da Página do Usuário ---
-function abrirPaginaUsuario() {
-    const user = auth.currentUser;
-    if (!user) {
-        alert("Você precisa estar logado para ver seu perfil.");
-        return;
-    }
-
-    detalhesArtigo.style.display = 'none';
-    editorArtigo.style.display = 'none';
-    historicoArtigo.style.display = 'none';
-    novoArtigoSection.style.display = 'none';
-    paginaUsuarioSection.style.display = 'block';
-
-    exibirAba('contribuicoes');
-}
-
-function exibirAba(tabName) {
-    document.querySelectorAll('.tab-button').forEach(btn => {
-        btn.classList.remove('active');
-        btn.style.backgroundColor = '#a2a9b1';
-    });
-    document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
-    
-    const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
-    activeBtn.classList.add('active');
-    activeBtn.style.backgroundColor = '#0645ad';
-    document.getElementById(`${tabName}-tab`).style.display = 'block';
-
-    if (tabName === 'contribuicoes') {
-        carregarMinhasContribuicoes();
-    } else if (tabName === 'pagina-pessoal') {
-        carregarPaginaPessoal();
-    } else if (tabName === 'discussao') {
-        carregarMensagensDiscussao();
-    }
-}
-
-async function carregarMinhasContribuicoes() {
-    const user = auth.currentUser;
-    listaMinhasContribuicoes.innerHTML = '<p style="text-align: center; color: #888;">Buscando suas contribuições...</p>';
-
-    try {
-        const querySnapshot = await db.collection('historicoEdicoes')
-            .where('editorId', '==', user.uid)
-            .orderBy('dataEdicao', 'desc')
-            .get();
-
-        if (querySnapshot.empty) {
-            listaMinhasContribuicoes.innerHTML = '<p style="text-align: center; color: #888;">Você ainda não fez nenhuma contribuição.</p>';
-            return;
-        }
-
-        let html = '';
-        querySnapshot.forEach(doc => {
-            const contribuicao = doc.data();
-            const dataFormatada = contribuicao.dataEdicao ? new Date(contribuicao.dataEdicao.seconds * 1000).toLocaleString() : 'Data desconhecida';
-            const tituloArtigo = contribuicao.titulo || 'Título não disponível';
-
-            html += `
-                <div class="contribuicao-item" data-id="${contribuicao.idArtigo}">
-                    <p><strong>Artigo:</strong> ${tituloArtigo}</p>
-                    <p><strong>Data da Edição:</strong> ${dataFormatada}</p>
-                    <p><strong>Resumo:</strong> ${contribuicao.sumarioEdicao || 'Nenhum'}</p>
-                </div>
-            `;
-        });
-        listaMinhasContribuicoes.innerHTML = html;
-
-        listaMinhasContribuicoes.querySelectorAll('.contribuicao-item').forEach(item => {
-            item.addEventListener('click', async (e) => {
-                const artigoId = e.currentTarget.getAttribute('data-id');
-                try {
-                    const doc = await db.collection('materias').doc(artigoId).get();
-                    if (doc.exists) {
-                        carregarDetalhesArtigo(doc.id, doc.data());
-                    } else {
-                        alert("O artigo original não foi encontrado.");
-                    }
-                } catch (error) {
-                    console.error("Erro ao buscar o artigo:", error);
-                    alert("Erro ao buscar o artigo.");
-                }
-            });
-        });
-    } catch (error) {
-        console.error("Erro ao buscar suas contribuições:", error);
-        listaMinhasContribuicoes.innerHTML = `<p style="text-align: center; color: #e74c3c;">Erro ao carregar suas contribuições: ${error.message}</p>`;
-    }
-}
-
-async function carregarPaginaPessoal() {
-    const user = auth.currentUser;
-    if (!user) return;
-    
-    try {
-        const docRef = db.collection('paginasUsuario').doc(user.uid);
-        const doc = await docRef.get();
-        if (doc.exists) {
-            const data = doc.data();
-            paginaPessoalTextarea.value = data.conteudo || '';
-            paginaPessoalContent.innerHTML = data.conteudo || '<p>Sua página pessoal ainda está vazia.</p>';
-        } else {
-            paginaPessoalTextarea.value = '';
-            paginaPessoalContent.innerHTML = '<p>Sua página pessoal ainda está vazia.</p>';
-        }
-    } catch (error) {
-        console.error("Erro ao carregar página pessoal:", error);
-        alert("Erro ao carregar sua página pessoal.");
-    }
-}
-
-async function salvarPaginaPessoal() {
-    const user = auth.currentUser;
-    if (!user) return;
-    const conteudo = paginaPessoalTextarea.value;
-    
-    try {
-        await db.collection('paginasUsuario').doc(user.uid).set({
-            conteudo: conteudo,
-            editorEmail: user.email,
-            ultimaEdicao: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        alert("Página pessoal salva com sucesso!");
-        carregarPaginaPessoal();
-    } catch (error) {
-        console.error("Erro ao salvar página pessoal:", error);
-        alert("Erro ao salvar sua página pessoal.");
-    }
-}
-
-function carregarMensagensDiscussao() {
-    listaMensagens.innerHTML = `
-        <div style="border-bottom: 1px solid #eaecf0; padding: 1em 0; margin-bottom: 1em;">
-            <p><strong>Aviso:</strong> Este é um espaço reservado para notificações futuras.</p>
-        </div>
-        <p style="text-align: center; color: #888;">Nenhuma mensagem nova.</p>
-    `;
-}
-
-// --- Funções de Impressão ---
-function imprimirArtigo() {
-    const articleToPrint = detalhesArtigo.innerHTML;
-
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write('<html><head><title>Imprimir Artigo</title>');
-    
-    // Copia os estilos CSS relevantes para a nova janela
-    const styles = document.querySelectorAll('style, link[rel="stylesheet"]');
-    styles.forEach(style => {
-        printWindow.document.write(style.outerHTML);
-    });
-
-    printWindow.document.write('</head><body>');
-    printWindow.document.write('<div class="detalhes-artigo">' + articleToPrint + '</div>');
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-
-    printWindow.onload = () => {
-        const botoesParaOcultar = printWindow.document.querySelector('.botoes-artigo-imprimivel');
-        if (botoesParaOcultar) {
-            botoesParaOcultar.style.display = 'none';
-        }
-        printWindow.focus();
-        printWindow.print();
-        printWindow.close();
-    };
-}
-
-
-// --- Event Listeners para os botões e filtros ---
-perfilButton.addEventListener('click', abrirPaginaUsuario);
-novoArtigoButton.addEventListener('click', abrirFormNovoArtigo);
-
-tabButtons.forEach(button => {
-    button.addEventListener('click', (e) => {
-        const tabName = e.target.getAttribute('data-tab');
-        exibirAba(tabName);
-    });
-});
-
-salvarPaginaPessoalBtn.addEventListener('click', salvarPaginaPessoal);
-cancelarPaginaPessoalBtn.addEventListener('click', carregarPaginaPessoal);
-
-voltarAoPainelPerfilBtn.addEventListener('click', () => {
-    paginaUsuarioSection.style.display = 'none';
-    buscarArtigos(currentCategory, currentArmario);
-});
-
-categoryList.addEventListener('click', (e) => {
-    e.preventDefault();
-    const link = e.target.closest('a');
-    if (!link) return;
-    
-    const categoria = link.getAttribute('data-category');
-    if (categoria) {
-        const currentActive = categoryList.querySelector('a.active');
-        if (currentActive) {
-            currentActive.classList.remove('active');
-        }
-        link.classList.add('active');
-        
-        currentCategory = categoria;
-        buscarArtigos(currentCategory, currentArmario);
-    }
-});
-
-armarioFilter.addEventListener('change', (e) => {
-    currentArmario = e.target.value;
-    buscarArtigos(currentCategory, currentArmario);
-});
+})();
 </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo - WZZM</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans">
-    <style>
-        /* Estilos base do corpo e do contêiner */
-        body {
-            font-family: 'Noto Sans', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f8f9fa;
-            color: #202122;
-        }
-
-        /* Estilos do formulário de login (agora com login Google) */
-        .login-container {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #f8f9fa;
-        }
-        .login-form {
-            background-color: #ffffff;
-            padding: 40px;
-            border: 1px solid #a2a9b1;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 350px;
-            text-align: center;
-        }
-        .login-form h2 {
-            color: #333;
-            margin-bottom: 25px;
-        }
-        .login-form p {
-            color: #54595d;
-            margin-bottom: 25px;
-        }
-        .google-btn {
-            background-color: #4285F4;
-            color: white;
-            padding: 12px;
-            font-size: 1em;
-            cursor: pointer;
-            border: none;
-            border-radius: 4px;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .google-btn:hover {
-            background-color: #357ae8;
-        }
-        .google-icon {
-            margin-right: 10px;
-            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/2048px-Google_%22G%22_logo.svg.png') no-repeat center;
-            background-size: contain;
-            width: 24px;
-            height: 24px;
-        }
-
-        /* Estilos da barra de cabeçalho e do corpo principal */
-        .header-logged-in {
-            display: none;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 30px;
-            background-color: #343a40;
-            color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .main-container {
-            display: none;
-            flex-direction: row;
-            height: calc(100vh - 70px);
-        }
-
-        /* Estilos da barra lateral */
-        .sidebar-nav {
-            width: 250px;
-            background-color: #f8f9fa;
-            border-right: 1px solid #a2a9b1;
-            padding: 1em 0;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-            overflow-y: auto;
-        }
-        .sidebar-nav h2 {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #54595d;
-            padding: 0 1em;
-            margin-bottom: 0.5em;
-            border-bottom: 1px solid #a2a9b1;
-            padding-bottom: 0.5em;
-        }
-        .sidebar-nav ul {
-            list-style: none;
-            padding: 0 0.5em;
-            margin: 0;
-        }
-        .sidebar-nav li {
-                margin-bottom: 0.25em;
-        }
-        .sidebar-nav a {
-            display: block;
-            padding: 0.5em 1em;
-            color: #0645ad;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: background-color 0.2s;
-        }
-        .sidebar-nav a:hover {
-            background-color: #eaecf0;
-            text-decoration: underline;
-        }
-        .sidebar-nav a.active {
-            background-color: #eaf3ff;
-            font-weight: bold;
-        }
-
-        /* Estilos do contêiner de conteúdo principal */
-        .content-main {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: row;
-            overflow: hidden;
-        }
-        .lista-artigos-pane {
-            width: 30%;
-            background-color: #ffffff;
-            border-right: 1px solid #ddd;
-            padding: 1em;
-            overflow-y: auto;
-        }
-        .lista-artigos-pane h2 {
-            font-size: 1.5em;
-            color: #333;
-            text-align: center;
-            border-bottom: 1px solid #a2a9b1;
-            padding-bottom: 0.5em;
-        }
-        .artigo-item, .contribuicao-item {
-            padding: 1em;
-            border-bottom: 1px solid #eaecf0;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .artigo-item:hover, .artigo-item.ativo, .contribuicao-item:hover {
-            background-color: #eaf3ff;
-        }
-        .artigo-item h3 {
-            margin: 0 0 5px 0;
-            color: #0645ad;
-            font-size: 1.1em;
-        }
-        .artigo-item p, .contribuicao-item p {
-            font-size: 0.9em;
-            color: #54595d;
-            margin: 0;
-        }
-        
-        /* Estilos do painel de detalhes (inspirado na Wikipédia) */
-        .detalhes-artigo, #editor-artigo, #historico-artigo, #novo-artigo, #pagina-usuario {
-            width: 70%;
-            padding: 2em;
-            overflow-y: auto;
-            background-color: #ffffff;
-            line-height: 1.6;
-        }
-        .detalhes-artigo .article-header {
-            border-bottom: 1px solid #a2a9b1;
-            margin-bottom: 1em;
-            padding-bottom: 0.5em;
-        }
-        .detalhes-artigo h1 {
-            color: #000;
-            font-size: 2em;
-            margin: 0;
-        }
-        .detalhes-artigo h2 {
-            font-size: 1.5em;
-            margin-top: 1.5em;
-            color: #333;
-            border-bottom: 1px solid #a2a9b1;
-            padding-bottom: 0.25em;
-        }
-        .detalhes-artigo .uid-display {
-            font-size: 0.8em;
-            font-style: italic;
-            color: #72777d;
-            margin-top: 0.5em;
-        }
-        .detalhes-artigo .descricao-container {
-            margin-top: 1em;
-        }
-        .detalhes-artigo .fontes-container {
-            margin-top: 2em;
-            border-top: 1px solid #a2a9b1;
-            padding-top: 1em;
-        }
-        .detalhes-artigo .fontes-container p {
-            font-weight: bold;
-            color: #54595d;
-            margin-bottom: 0.5em;
-        }
-        .detalhes-artigo .fontes-container ul {
-            list-style-type: disc;
-            padding-left: 1.5em;
-        }
-        .detalhes-artigo .fontes-container li {
-            margin-bottom: 0.25em;
-        }
-
-        /* Estilos para o editor de artigos */
-        #form-edicao-artigo label, #form-novo-artigo label, #form-enviar-mensagem label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        #form-edicao-artigo input, #form-edicao-artigo textarea, #form-novo-artigo input, #form-novo-artigo textarea, #form-novo-artigo select, #pagina-pessoal-textarea, #mensagem-uid-destinatario, #mensagem-conteudo {
-            border: 1px solid #a2a9b1;
-            border-radius: 4px;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        #form-edicao-artigo textarea, #form-novo-artigo textarea, #pagina-pessoal-textarea, #mensagem-conteudo {
-            resize: vertical;
-        }
-        #form-edicao-artigo button, #form-novo-artigo button, .user-tabs button, #salvar-pagina-pessoal, #cancelar-pagina-pessoal, #enviar-mensagem-btn {
-            margin-right: 10px;
-        }
-        .user-tabs .tab-button.active {
-            background-color: #0645ad;
-            color: white;
-        }
-        .mensagem-item {
-            border-bottom: 1px solid #eaecf0;
-            padding: 1em 0;
-            margin-bottom: 1em;
-        }
-        
-        /* Estilos de impressão */
-        @media print {
-            body > *:not(.detalhes-artigo) {
-                display: none !important;
-            }
-            .detalhes-artigo {
-                width: auto !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                overflow: visible !important;
-            }
-            .botoes-artigo-imprimivel {
-                display: none !important;
-            }
-        }
-    </style>
 </head>
 <body>
 
-<div class="login-container" id="login-section">
-    <div class="login-form">
-        <h2>Entrar no Painel</h2>
-        <p>Use sua conta Google para continuar.</p>
-        <button id="google-login-btn" class="google-btn">
-            <div class="google-icon"></div>
-            Entrar com Google
-        </button>
-    </div>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+<header class="mdl-layout__header">
+<div class="mdl-layout__header-row">
+<span class="mdl-layout-title" id="wiki-page-name">Carregando...</span>
+<a href="https://wikizero.wzzm.org/" id="./wikinotpedia/">
+<img src="https://wzzm.org/wnp.png" alt="Logo Wiki Zone Zero Mod" style="height: 32px; vertical-align: middle; margin-right: 8px;"></a> <div class="mdl-layout-spacer"></div>
+<nav class="mdl-navigation">
+<button class="mdl-button mdl-js-button mdl-button--icon" id="error-log-button" title="Ver Erros">
+<i class="material-icons">bug_report</i>
+</button>
+<a class="mdl-navigation__link" href="#" id="search-articles-link" onclick="createFloatingWindow('ferramentasuteis.html', null, false)">Procurar Artigos</a>
+<div style="position: relative; display: flex; align-items: center;">
+<button class="mdl-button mdl-js-button mdl-button--icon" id="news-button" style="display: none;">
+<i class="material-icons">article</i>
+</button>
+<div id="news-center-popup">
+<div id="news-popup-header">
+<span>Últimas Notícias</span>
+<button class="close-button" id="close-news-popup-button">×</button>
+</div>
+<div id="news-popup-content">
+<p>Carregando últimas notícias...</p>
+</div>
+<div id="news-popup-footer">
+<button id="view-all-news-button" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
+Ver todas as Notícias
+</button>
+</div>
+</div>
+<button class="mdl-button mdl-js-button mdl-button--icon" id="google-apps-button" style="display: none;">
+<i class="material-icons">widgets</i>
+</button>
+<div id="google-apps-popup">
+<h4>Serviços WZZM</h4>
+<div id="app-grid">
+</div>
+</div>
+<div id="user-info-container" style="display: none; align-items: center;">
+<span id="user-info" style="margin-left: 8px; color: white;"></span>
+<img id="user-profile-pic" src="" alt="Profile Pic">
+<button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" id="logout-button" style="margin-left: 10px; display: none;">Sair</button>
+</div>
+<button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" id="login-google">Login Google</button>
+<button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" id="login-github" style="margin-left: 10px;">Login GitHub</button>
+</div>
+</nav>
+</div>
+</header>
+<div class="mdl-layout__drawer">
+<span class="mdl-layout-title" id="drawer-title">Navegação</span>
+<nav class="mdl-navigation" id="drawer-menu">
+</nav>
+</div>
+<main class="mdl-layout__content">
+<iframe id="main-content-frame" src="wnpx.html" frameborder="0"></iframe>
+<div id="window-container"></div>
+</main>
+<div id="access-denied-message" style="display:none;">
+<p>Acesso negado. Por favor, faça login para ver este conteúdo.</p>
+</div>
+<div id="banned-message" style="display:none;">
+<p>Sua conta foi banida. Você não pode acessar o conteúdo.</p>
+<p>Para mais informações, contate o suporte.</p>
+</div>
+<div id="error-log-popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 600px; height: 80%; max-height: 400px; background: white; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 1002; flex-direction: column;">
+<div style="padding: 16px; background-color: #f5f5f5; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center;">
+<h4 style="margin: 0;">Log de Erros do Console</h4>
+<button onclick="document.getElementById('error-log-popup').style.display='none';" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+</div>
+<ul id="error-log-list" style="list-style-type: none; margin: 0; padding: 16px; flex-grow: 1; overflow-y: auto;">
+</ul>
+</div>
 </div>
 
-<div id="logged-in-container">
-    <div class="header-logged-in" id="header-logged-in">
-        <h1>Wiki NOT Pédia</h1>
-        <div>
-            <button id="novo-artigo-button" style="padding: 8px 15px; background-color: #2a9d8f; color: white; border: none; cursor: pointer; margin-right: 10px;">Novo Artigo</button>
-            <button id="perfil-button" style="padding: 8px 15px; background-color: #54595d; color: white; border: none; cursor: pointer; margin-right: 10px;">Meu Perfil</button>
-            <button id="logout-button">Sair</button>
-        </div>
-    </div>
-    
-    <div class="main-container" id="content-split">
-        
-        <div class="sidebar-nav">
-            <h2>Categorias</h2>
-            <ul id="category-list">
-                <li><a href="#" data-category="Arte">Arte</a></li>
-                <li><a href="#" data-category="Biografias">Biografias</a></li>
-                <li><a href="#" data-category="Ciência">Ciência</a></li>
-                <li><a href="#" data-category="Filosofia">Filosofia</a></li>
-                <li><a href="#" data-category="Geografia">Geografia</a></li>
-                <li><a href="#" data-category="História">História</a></li>
-                <li><a href="#" data-category="Matemática">Matemática</a></li>
-                <li><a href="#" data-category="Sociedade">Sociedade</a></li>
-                <li><a href="#" data-category="Tecnologia">Tecnologia</a></li>
-                <li style="margin-top: 1em; border-top: 1px solid #a2a9b1;">
-                    <a href="#" data-category="all" class="active">Todos os Artigos</a>
-                </li>
-            </ul>
-
-            <div style="padding: 0 1em; margin-top: 1.5em;">
-                <h2>Idioma</h2>
-                <select id="armario-filter" style="width: 100%; padding: 8px; font-size: 1em; border: 1px solid #a2a9b1; border-radius: 4px;">
-                    <option value="all">Todos os Idiomas</option>
-                    <option value="Português" selected>Português</option>
-                    <option value="Inglês">Inglês</option>
-                    <option value="Espanhol">Espanhol</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="content-main">
-            <div class="lista-artigos-pane">
-                <h2 id="artigos-title">Artigos Recentes</h2>
-                <div id="artigos-list">
-                    <p style="text-align: center; color: #666;">Carregando...</p>
-                </div>
-            </div>
-
-            <div class="detalhes-artigo" id="detalhes-artigo">
-                <p style="text-align: center; color: #888;">Selecione um artigo na lista para ver os detalhes.</p>
-            </div>
-
-            <div id="editor-artigo" style="display: none; padding: 2em; overflow-y: auto; background-color: #ffffff; line-height: 1.6;">
-                <form id="form-edicao-artigo">
-                    <h2>Editar Artigo</h2>
-
-                    <div style="margin-bottom: 1em;">
-                        <label for="edit-titulo">Título</label>
-                        <input type="text" id="edit-titulo" required style="width: 100%; padding: 8px; margin-top: 5px;">
-                    </div>
-
-                    <div style="margin-bottom: 1em;">
-                        <label for="edit-descricao">Descrição</label>
-                        <textarea id="edit-descricao" rows="15" style="width: 100%; padding: 8px; margin-top: 5px;"></textarea>
-                    </div>
-                    
-                    <div style="margin-bottom: 1em;">
-                        <label for="edit-sumario">Resumo da Edição (para o Histórico)</label>
-                        <input type="text" id="edit-sumario" required style="width: 100%; padding: 8px; margin-top: 5px;">
-                    </div>
-
-                    <button type="submit" style="padding: 10px 20px; background-color: #2a6f8b; color: white; border: none; cursor: pointer;">Salvar Edição</button>
-                    <button type="button" id="cancelar-edicao" style="padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Cancelar</button>
-                </form>
-            </div>
-
-            <div id="historico-artigo" style="display: none; padding: 2em; overflow-y: auto; background-color: #ffffff; line-height: 1.6;">
-                <h2 style="border-bottom: 1px solid #a2a9b1; padding-bottom: 0.5em;">Histórico de Edições</h2>
-                <div id="lista-historico">
-                    <p style="text-align: center; color: #888;">Carregando histórico...</p>
-                </div>
-                <button type="button" id="voltar-detalhes" style="margin-top: 1em; padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Voltar</button>
-            </div>
-
-            <div id="novo-artigo" style="display: none; width: 70%; padding: 2em; overflow-y: auto; background-color: #ffffff; line-height: 1.6;">
-                <form id="form-novo-artigo">
-                    <h2>Criar Novo Artigo</h2>
-
-                    <div style="margin-bottom: 1em;">
-                        <label for="new-titulo">Título</label>
-                        <input type="text" id="new-titulo" required style="width: 100%; padding: 8px; margin-top: 5px;">
-                    </div>
-
-                    <div style="margin-bottom: 1em;">
-                        <label for="new-setor">Setor / Categoria</label>
-                        <select id="new-setor" required style="width: 100%; padding: 8px; margin-top: 5px;">
-                            <option value="">Selecione uma categoria</option>
-                            <option value="Arte">Arte</option>
-                            <option value="Biografias">Biografias</option>
-                            <option value="Ciência">Ciência</option>
-                            <option value="Filosofia">Filosofia</option>
-                            <option value="Geografia">Geografia</option>
-                            <option value="História">História</option>
-                            <option value="Matemática">Matemática</option>
-                            <option value="Sociedade">Sociedade</option>
-                            <option value="Tecnologia">Tecnologia</option>
-                        </select>
-                    </div>
-
-                    <div style="margin-bottom: 1em;">
-                        <label for="new-armario">Idioma</label>
-                        <select id="new-armario" required style="width: 100%; padding: 8px; margin-top: 5px;">
-                            <option value="">Selecione um idioma</option>
-                            <option value="Português">Português</option>
-                            <option value="Inglês">Inglês</option>
-                            <option value="Espanhol">Espanhol</option>
-                        </select>
-                    </div>
-
-                    <div style="margin-bottom: 1em;">
-                        <label for="new-descricao">Descrição</label>
-                        <textarea id="new-descricao" rows="15" required style="width: 100%; padding: 8px; margin-top: 5px;"></textarea>
-                    </div>
-                    
-                    <button type="submit" style="padding: 10px 20px; background-color: #2a9d8f; color: white; border: none; cursor: pointer;">Criar Artigo</button>
-                    <button type="button" id="cancelar-novo-artigo" style="padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Cancelar</button>
-                </form>
-            </div>
-
-            <div id="pagina-usuario" style="display: none; width: 70%; padding: 2em; overflow-y: auto; background-color: #ffffff; line-height: 1.6;">
-                <div class="user-header" style="border-bottom: 1px solid #a2a9b1; padding-bottom: 0.5em; margin-bottom: 1.5em;">
-                    <h2 id="user-display-name">Carregando Perfil...</h2>
-                </div>
-
-                <div class="user-tabs" style="margin-bottom: 1.5em;">
-                    <button class="tab-button" data-tab="contribuicoes" style="padding: 10px 15px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Minhas Contribuições</button>
-                    <button class="tab-button" data-tab="pagina-pessoal" style="padding: 10px 15px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Página Pessoal</button>
-                    <button class="tab-button" data-tab="discussao" style="padding: 10px 15px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Discussão</button>
-                </div>
-                
-                <div id="contribuicoes-tab" class="tab-content" style="display: none;">
-                    <h3 style="margin-top: 0;">Lista de Contribuições</h3>
-                    <div id="lista-minhas-contribuicoes">
-                        <p style="text-align: center; color: #888;">Carregando suas contribuições...</p>
-                    </div>
-                </div>
-
-                <div id="pagina-pessoal-tab" class="tab-content" style="display: none;">
-                    <h3 style="margin-top: 0;">Página Pessoal</h3>
-                    <div id="pagina-pessoal-editor" style="margin-bottom: 1em;">
-                        <textarea id="pagina-pessoal-textarea" rows="15" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #a2a9b1;"></textarea>
-                        <button id="salvar-pagina-pessoal" style="margin-top: 10px; padding: 10px 20px; background-color: #2a9d8f; color: white; border: none; cursor: pointer;">Salvar</button>
-                        <button id="cancelar-pagina-pessoal" style="margin-top: 10px; padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Cancelar</button>
-                    </div>
-                    <div id="pagina-pessoal-viewer" style="border: 1px solid #ccc; padding: 1em; background-color: #f9f9f9; display: none;">
-                        <p id="pagina-pessoal-content"></p>
-                    </div>
-                </div>
-                
-                <div id="discussao-tab" class="tab-content" style="display: none;">
-                    <h3 style="margin-top: 0;">Mensagens e Notificações</h3>
-                    
-                    <div style="margin-bottom: 2em; padding-bottom: 1em; border-bottom: 1px solid #a2a9b1;">
-                        <h4>Enviar Mensagem</h4>
-                        <form id="form-enviar-mensagem">
-                            <div style="margin-bottom: 1em;">
-                                <label for="mensagem-uid-destinatario">UID do Destinatário</label>
-                                <input type="text" id="mensagem-uid-destinatario" required style="width: 100%;" placeholder="UID do usuário">
-                            </div>
-                            <div style="margin-bottom: 1em;">
-                                <label for="mensagem-conteudo">Mensagem</label>
-                                <textarea id="mensagem-conteudo" rows="4" required style="width: 100%;"></textarea>
-                            </div>
-                            <button type="submit" id="enviar-mensagem-btn" style="padding: 10px 20px; background-color: #0645ad; color: white; border: none; cursor: pointer;">Enviar Mensagem</button>
-                        </form>
-                    </div>
-                    
-                    <div id="mensagens-recebidas">
-                        <h4>Mensagens Recebidas</h4>
-                        <div id="lista-mensagens">
-                            <p style="text-align: center; color: #888;">Nenhuma mensagem nova.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <button type="button" id="voltar-ao-painel-perfil" style="margin-top: 2em; padding: 10px 20px; background-color: #a2a9b1; color: white; border: none; cursor: pointer;">Voltar ao Painel</button>
-            </div>
-            
-        </div>
-    </div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
+<script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-analytics-compat.js"></script>
 <script>
 // --- Configuração do Firebase ---
 const firebaseConfig = {
-    apiKey: "AIzaSyB9GkSqTIZ0kbVsba_WOdQeVAETrF9qna0", 
-    authDomain: "wzzm-ce3fc.firebaseapp.com",
-    projectId: "wzzm-ce3fc",
-    storageBucket: "wzzm-ce3fc.appspot.com",
-    messagingSenderId: "249427877153",
-    appId: "1:249427877153:web:0e4297294794a5aadeb260",
-    measurementId: "G-PLKNZNFCQ8"
+apiKey: "AIzaSyB9GkSqTIZ0kbVsba_WOdQeVAETrF9qna0", // Use sua própria chave!
+authDomain: "wzzm-ce3fc.firebaseapp.com",
+projectId: "wzzm-ce3fc",
+storageBucket: "wzzm-ce3fc.appspot.com",
+messagingSenderId: "249427877153",
+appId: "1:249427877153:web:0e4297294794a5aadeb260",
+measurementId: "G-PLKNZNFCQ8"
 };
-
-// Inicialize o Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+// Inicialize Firebase
+const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const firestore = firebase.firestore();
+firebase.analytics();
 
-// Array com os UIDs dos usuários administradores.
-// Substitua o valor pelo seu UID para testar a funcionalidade.
-const adminUids = ["seu-uid-de-admin-aqui"];
+// Variáveis globais para estado do usuário
+let currentUser = null;
+let isCurrentUserBanned = false;
 
-// Elementos da interface
-const loginSection = document.getElementById('login-section');
-const loggedInHeader = document.getElementById('header-logged-in');
-const mainContainer = document.getElementById('content-split');
+// --- Funções Auxiliares (Antiga loadPage foi substituída pela nova que cria janelas flutuantes) ---
+// A função loadPage original que manipulava 'contentFrame' não é mais usada diretamente para links de navegação.
+// Ela ainda é referenciada em outras partes do código para manipulação de mensagens de acesso/banimento,
+// mas a navegação principal usará a nova createFloatingWindow.
+
+// Função para ativar/desativar links de navegação com base no status de login
+function setNavLinksEnabled(enabled) {
+const navLinks = document.querySelectorAll('.mdl-navigation__link[data-requires-auth="true"]');
+navLinks.forEach(link => {
+if (enabled) {
+link.style.pointerEvents = 'auto';
+link.style.color = '#424242'; // Cor padrão
+} else {
+link.style.pointerEvents = 'none';
+link.style.color = '#9e9e9e';
+}
+});
+}
+
+// Função para criar/atualizar o documento do perfil do usuário no Firestore
+async function createUserProfileDocument(user) {
+if (!user) return;
+const userRef = firestore.doc(`users/${user.uid}`);
+const snapshot = await userRef.get();
+
+if (!snapshot.exists) {
+const { displayName, email, photoURL } = user;
+const createdAt = new Date();
+
+try {
+await userRef.set({
+displayName,
+email,
+photoURL,
+createdAt,
+isAdmin: false, // Define como false por padrão
+isBan: false // Define como false por padrão
+});
+console.log("Perfil do usuário criado no Firestore.");
+} catch (error) {
+console.error("Erro ao criar perfil do usuário:", error);
+}
+}
+}
+
+// Função para carregar e aplicar CSS de aplicativos específicos do usuário
+async function loadAndApplyUserAppsCSS(userId) {
+const customAppCssStyleTag = document.getElementById('custom-app-css');
+if (!customAppCssStyleTag) return;
+
+try {
+const userAppsSnapshot = await firestore.collection('userApps').doc(userId).get();
+if (userAppsSnapshot.exists) {
+const appData = userAppsSnapshot.data();
+let cssContent = '';
+if (appData && appData.apps) {
+appData.apps.forEach(app => {
+if (app.css) {
+cssContent += app.css + '\n';
+}
+});
+}
+customAppCssStyleTag.innerHTML = cssContent;
+} else {
+customAppCssStyleTag.innerHTML = '';
+}
+} catch (error) {
+console.error("Erro ao carregar CSS de aplicativos do usuário:", error);
+customAppCssStyleTag.innerHTML = '';
+}
+}
+
+// --- FUNÇÕES PARA O POPUP DE NOTÍCIAS (MANTIDAS) ---
+function showNewsPopup() {
+const newsCenterPopup = document.getElementById('news-center-popup');
+if (newsCenterPopup) {
+newsCenterPopup.style.display = 'flex';
+fetchLatestNews(); // Fetch news when popup is shown
+}
+}
+
+function hideNewsPopup() {
+const newsCenterPopup = document.getElementById('news-center-popup');
+if (newsCenterPopup) {
+newsCenterPopup.style.display = 'none';
+}
+}
+
+// Função para buscar as últimas notícias e exibi-las no popup
+async function fetchLatestNews() {
+const newsPopupContent = document.getElementById('news-popup-content');
+newsPopupContent.innerHTML = '<p>Carregando últimas notícias...</p>';
+try {
+const newsSnapshot = await firestore.collection('news')
+.orderBy('createdAt', 'desc')
+.limit(5) // Limita a 5 notícias para o popup
+.get();
+if (newsSnapshot.empty) {
+newsPopupContent.innerHTML = '<p>Nenhuma notícia encontrada.</p>';
+return;
+}
+
+newsPopupContent.innerHTML = '';
+// Limpa o conteúdo existente
+newsSnapshot.forEach(doc => {
+const news = doc.data();
+const newsItem = document.createElement('div');
+newsItem.classList.add('news-popup-item');
+
+const timestampDate = news.createdAt ? news.createdAt.toDate() : new Date();
+const timeString = timestampDate.toLocaleString([], {
+year: 'numeric', month: 'numeric', day: 'numeric',
+hour: '2-digit', minute: '2-digit'
+});
+
+newsItem.innerHTML = `
+<h3>${news.title}</h3>
+<p>${news.description}</p>
+<small>Categoria: ${news.category}</small><br> ${news.tags && news.tags.length > 0 ? `<small>Tags: ${news.tags.join(', ')}</small><br>` : ''}
+<small>Publicado em: ${timeString}</small>
+${news.imageUrl ? `<img src="${news.imageUrl}" alt="Imagem da Notícia">` : ''} `;
+newsPopupContent.appendChild(newsItem);
+});
+
+} catch (error) {
+console.error("Erro ao buscar últimas notícias para o popup:", error);
+newsPopupContent.innerHTML = `<p style="color: red;">Erro ao carregar notícias: ${error.message}</p>`;
+}
+}
+
+// --- Funções de Autenticação (EXISTENTES) ---
+const providerGoogle = new firebase.auth.GoogleAuthProvider();
+const providerGitHub = new firebase.auth.GithubAuthProvider();
+
+document.getElementById('login-google').addEventListener('click', () => {
+auth.signInWithPopup(providerGoogle)
+.catch(error => {
+console.error("Erro no login com Google:", error);
+});
+});
+document.getElementById('login-github').addEventListener('click', () => {
+auth.signInWithPopup(providerGitHub)
+.catch(error => {
+console.error("Erro no login com GitHub:", error);
+});
+});
+function handleLogout() {
+auth.signOut().then(() => {
+console.log("Usuário deslogado.");
+}).catch((error) => {
+console.error("Erro ao deslogar:", error);
+});
+}
 const logoutButton = document.getElementById('logout-button');
-const artigosList = document.getElementById('artigos-list');
-const detalhesArtigo = document.getElementById('detalhes-artigo');
-const artigosTitle = document.getElementById('artigos-title');
-const categoryList = document.getElementById('category-list');
-const armarioFilter = document.getElementById('armario-filter');
-const googleLoginBtn = document.getElementById('google-login-btn');
-
-// Elementos de edição e histórico
-const editorArtigo = document.getElementById('editor-artigo');
-const formEdicaoArtigo = document.getElementById('form-edicao-artigo');
-const editTitulo = document.getElementById('edit-titulo');
-const editDescricao = document.getElementById('edit-descricao');
-const editSumario = document.getElementById('edit-sumario');
-const cancelarEdicaoBtn = document.getElementById('cancelar-edicao');
-const historicoArtigo = document.getElementById('historico-artigo');
-const listaHistorico = document.getElementById('lista-historico');
-const voltarDetalhesBtn = document.getElementById('voltar-detalhes');
-
-// NOVOS ELEMENTOS: Criação e Histórico de Contribuições
-const novoArtigoButton = document.getElementById('novo-artigo-button');
-const novoArtigoSection = document.getElementById('novo-artigo');
-const formNovoArtigo = document.getElementById('form-novo-artigo');
-const newTitulo = document.getElementById('new-titulo');
-const newSetor = document.getElementById('new-setor');
-const newArmario = document.getElementById('new-armario');
-const newDescricao = document.getElementById('new-descricao');
-const cancelarNovoArtigoBtn = document.getElementById('cancelar-novo-artigo');
-
-// NOVOS ELEMENTOS: Página do Usuário
-const perfilButton = document.getElementById('perfil-button');
-const paginaUsuarioSection = document.getElementById('pagina-usuario');
-const userDisplayName = document.getElementById('user-display-name');
-const contribuicoesTab = document.getElementById('contribuicoes-tab');
-const paginaPessoalTab = document.getElementById('pagina-pessoal-tab');
-const discussaoTab = document.getElementById('discussao-tab');
-const paginaPessoalTextarea = document.getElementById('pagina-pessoal-textarea');
-const paginaPessoalViewer = document.getElementById('pagina-pessoal-viewer');
-const paginaPessoalContent = document.getElementById('pagina-pessoal-content');
-const salvarPaginaPessoalBtn = document.getElementById('salvar-pagina-pessoal');
-const cancelarPaginaPessoalBtn = document.getElementById('cancelar-pagina-pessoal');
-const voltarAoPainelPerfilBtn = document.getElementById('voltar-ao-painel-perfil');
-const listaMinhasContribuicoes = document.getElementById('lista-minhas-contribuicoes');
-const listaMensagens = document.getElementById('lista-mensagens');
-const tabButtons = document.querySelectorAll('.tab-button');
-
-// NOVOS ELEMENTOS: Mensagens
-const formEnviarMensagem = document.getElementById('form-enviar-mensagem');
-const mensagemUidDestinatario = document.getElementById('mensagem-uid-destinatario');
-const mensagemConteudo = document.getElementById('mensagem-conteudo');
-
-let artigoSelecionado = null;
-let currentCategory = 'all';
-let currentArmario = 'Português';
-
-// --- Lógica de Autenticação ---
-const googleProvider = new firebase.auth.GoogleAuthProvider();
-
-auth.onAuthStateChanged(user => {
-    if (user) {
-        console.log("Usuário logado:", user.email, "UID:", user.uid);
-        loginSection.style.display = 'none';
-        loggedInHeader.style.display = 'flex';
-        mainContainer.style.display = 'flex';
-        userDisplayName.textContent = user.displayName || user.email;
-        buscarArtigos(currentCategory, currentArmario);
-    } else {
-        console.log("Nenhum usuário logado.");
-        loginSection.style.display = 'flex';
-        loggedInHeader.style.display = 'none';
-        mainContainer.style.display = 'none';
-        artigosList.innerHTML = '<p style="text-align: center; color: #666;">Carregando...</p>';
-        detalhesArtigo.innerHTML = '<p style="text-align: center; color: #888;">Selecione um artigo na lista para ver os detalhes.</p>';
-        editorArtigo.style.display = 'none';
-        historicoArtigo.style.display = 'none';
-        novoArtigoSection.style.display = 'none';
-        paginaUsuarioSection.style.display = 'none';
-    }
-});
-
-googleLoginBtn.addEventListener('click', async () => {
-    try {
-        await auth.signInWithPopup(googleProvider);
-    } catch (error) {
-        console.error("Erro no login com Google:", error);
-        alert("Erro no login com Google: " + error.message);
-    }
-});
-
-logoutButton.addEventListener('click', () => {
-    auth.signOut();
-});
-
-// --- Lógica de busca e exibição dos artigos ---
-async function buscarArtigos(categoria, armario) {
-    artigosList.innerHTML = '<p style="text-align: center; color: #666;">Carregando...</p>';
-    detalhesArtigo.style.display = 'none';
-    editorArtigo.style.display = 'none';
-    historicoArtigo.style.display = 'none';
-    novoArtigoSection.style.display = 'none';
-    paginaUsuarioSection.style.display = 'none';
-
-    let query = db.collection('materias').orderBy('createdAt', 'desc').limit(10);
-    
-    if (categoria && categoria !== 'all') {
-        query = query.where('setor', '==', categoria);
-        artigosTitle.textContent = `Artigos de ${categoria}`;
-    } else {
-        artigosTitle.textContent = `Todos os Artigos`;
-    }
-
-    if (armario && armario !== 'all') {
-        query = query.where('armario', '==', armario);
-    }
-    
-    try {
-        const querySnapshot = await query.get();
-        artigosList.innerHTML = '';
-        
-        if (querySnapshot.empty) {
-            artigosList.innerHTML = `<p style="text-align: center; color: #666;">Nenhum artigo encontrado.</p>`;
-            return;
-        }
-        
-        querySnapshot.forEach(doc => {
-            const materia = doc.data();
-            const artigoItem = document.createElement('div');
-            artigoItem.className = 'artigo-item';
-            artigoItem.setAttribute('data-id', doc.id);
-            
-            artigoItem.innerHTML = `
-                <h3>${materia.titulo}</h3>
-                <p>ID: ${doc.id}</p>
-            `;
-            
-            artigoItem.addEventListener('click', () => {
-                carregarDetalhesArtigo(doc.id, materia);
-                if (artigoSelecionado) {
-                    artigoSelecionado.classList.remove('ativo');
-                }
-                artigoItem.classList.add('ativo');
-                artigoSelecionado = artigoItem;
-            });
-            
-            artigosList.appendChild(artigoItem);
-        });
-        
-    } catch (error) {
-        console.error("Erro ao buscar artigos: ", error);
-        artigosList.innerHTML = '<p style="text-align: center; color: #e74c3c;">Erro: ' + error.message + '</p>';
-    }
+if (logoutButton) {
+logoutButton.addEventListener('click', handleLogout);
 }
 
-function carregarDetalhesArtigo(id, materia) {
-    editorArtigo.style.display = 'none';
-    historicoArtigo.style.display = 'none';
-    novoArtigoSection.style.display = 'none';
-    paginaUsuarioSection.style.display = 'none';
-    detalhesArtigo.style.display = 'block';
+// --- Gerenciamento de Estado de Autenticação ---
+auth.onAuthStateChanged(async (user) => {
+currentUser = user; // Define o currentUser globalmente
+const userInfo = document.getElementById('user-info');
+const loginGoogleButton = document.getElementById('login-google');
+const loginGitHubButton = document.getElementById('login-github');
+const logoutButton = document.getElementById('logout-button');
+const userProfilePic = document.getElementById('user-profile-pic');
+const googleAppsButton = document.getElementById('google-apps-button');
+const userInfoContainer = document.getElementById('user-info-container');
+const googleAppsPopup = document.getElementById('google-apps-popup');
+const customAppCssStyleTag = document.getElementById('custom-app-css');
+const contentFrame = document.getElementById('main-content-frame');
+const accessDeniedMessage = document.getElementById('access-denied-message');
+const bannedMessage = document.getElementById('banned-message');
+const newsButton = document.getElementById('news-button');
+const newsCenterPopup = document.getElementById('news-center-popup');
 
-    const ehAdmin = materia.editorId && adminUids.includes(materia.editorId);
-    const editorInfoHtml = `
-        <p><strong>Última Edição por:</strong> ${materia.editorEmail || 'Desconhecido'} 
-        ${ehAdmin ? '<span style="font-weight: bold; color: #e74c3c;">(Administrador)</span>' : ''}</p>
-        <p><strong>UID do Editor:</strong> ${materia.editorId || 'Não disponível'}</p>
-    `;
 
-    let fontesHtml = '';
-    if (materia.fontes && materia.fontes.length > 0) {
-        const fontesLista = materia.fontes.map(fonte => {
-            const isUrl = fonte.startsWith('http://') || fonte.startsWith('https://');
-            if (isUrl) {
-                return `<li><a href="${fonte}" target="_blank">${fonte}</a></li>`;
-            } else {
-                return `<li>${fonte}</li>`;
-            }
-        }).join('');
-        
-        fontesHtml = `
-            <div class="fontes-container">
-                <p>Fontes:</p>
-                <ul>${fontesLista}</ul>
-            </div>
-        `;
-    }
-    
-    let infoHtml = ``;
-    if (materia.setor) infoHtml += `<p><strong>Setor:</strong> ${materia.setor}</p>`;
-    if (materia.arquivo) infoHtml += `<p><strong>Arquivo:</strong> ${materia.arquivo}</p>`;
-    if (materia.armario) infoHtml += `<p><strong>Armário:</strong> ${materia.armario}</p>`;
-    
-    detalhesArtigo.innerHTML = `
-        <div class="article-header">
-            <h1>${materia.titulo}</h1>
-            <p class="uid-display">UID do Documento: ${id}</p>
-        </div>
-        
-        <div style="margin-bottom: 1em;" class="botoes-artigo-imprimivel">
-            <button id="btn-editar-artigo" data-id="${id}" style="padding: 8px 15px; background-color: #0645ad; color: white; border: none; cursor: pointer; margin-right: 10px;">Editar</button>
-            <button id="btn-ver-historico" data-id="${id}" style="padding: 8px 15px; background-color: #36c; color: white; border: none; cursor: pointer;">Histórico</button>
-            <button id="btn-imprimir-artigo" style="padding: 8px 15px; background-color: #555; color: white; border: none; cursor: pointer; margin-left: 10px;">Imprimir</button>
-        </div>
+if (user) {
+if (userInfo) userInfo.textContent = `Olá, ${user.displayName || user.email}!`;
+if (loginGoogleButton) loginGoogleButton.style.display = 'none';
+if (loginGitHubButton) loginGitHubButton.style.display = 'none';
+if (user.photoURL) {
+if (userProfilePic) {
+userProfilePic.src = user.photoURL;
+userProfilePic.style.display = 'inline-block';
+}
+} else {
+if (userProfilePic) userProfilePic.style.display = 'none';
+}
+if (googleAppsButton) googleAppsButton.style.display = 'inline-block';
+if (userInfoContainer) userInfoContainer.style.display = 'flex';
 
-        <h2>Informações Adicionais</h2>
-        ${infoHtml}
-        ${editorInfoHtml}
-        
-        <h2>Descrição</h2>
-        <div class="descricao-container">${materia.descricao}</div>
-        
-        ${fontesHtml}
-    `;
+await createUserProfileDocument(user);
 
-    document.getElementById('btn-editar-artigo').addEventListener('click', () => abrirEditor(id, materia));
-    document.getElementById('btn-ver-historico').addEventListener('click', () => abrirHistorico(id));
-    document.getElementById('btn-imprimir-artigo').addEventListener('click', imprimirArtigo);
+let isUserBanned = false;
+try {
+const userProfileRef = firestore.collection('users').doc(user.uid);
+const doc = await userProfileRef.get();
+
+if (doc.exists && doc.data()) {
+isUserBanned = doc.data().isBan || false;
+}
+} catch (error) {
+console.error("Erro ao verificar perfil de usuário ou status de banimento:", error);
+isUserBanned = false;
 }
 
-// --- Funções de Edição ---
-function abrirEditor(id, materia) {
-    detalhesArtigo.style.display = 'none';
-    historicoArtigo.style.display = 'none';
-    novoArtigoSection.style.display = 'none';
-    paginaUsuarioSection.style.display = 'none';
-    editorArtigo.style.display = 'block';
+isCurrentUserBanned = isUserBanned;
+if (isUserBanned) {
+console.warn(`Usuário ${user.uid} está banido.`);
+setNavLinksEnabled(false);
+if (logoutButton) {
+logoutButton.style.display = 'none';
+logoutButton.removeEventListener('click', handleLogout);
+}
+if (contentFrame) {
+contentFrame.style.display = 'none';
+}
+if (bannedMessage) bannedMessage.style.display = 'block';
+if (accessDeniedMessage) accessDeniedMessage.style.display = 'none';
 
-    editTitulo.value = materia.titulo || '';
-    editDescricao.value = materia.descricao || '';
-    editSumario.value = '';
-    formEdicaoArtigo.setAttribute('data-id', id);
-    formEdicaoArtigo.setAttribute('data-conteudo-original', JSON.stringify(materia));
+document.querySelectorAll('.floating-window').forEach(win => win.remove());
+
+if (googleAppsButton) {
+googleAppsButton.style.pointerEvents = 'none';
+googleAppsButton.style.opacity = '0.6';
+}
+if (googleAppsPopup) googleAppsPopup.style.display = 'none';
+if (newsButton) newsButton.style.display = 'none';
+if (newsCenterPopup) newsCenterPopup.style.display = 'none';
+} else { // User is not banned
+if (logoutButton) logoutButton.style.display = 'inline-block';
+setNavLinksEnabled(true); // Enable all links if not banned
+if (bannedMessage) bannedMessage.style.display = 'none';
+if (accessDeniedMessage) accessDeniedMessage.style.display = 'none';
+
+if (googleAppsButton) {
+googleAppsButton.style.pointerEvents = 'auto';
+googleAppsButton.style.opacity = '1';
+}
+if (newsButton) newsButton.style.display = 'inline-block';
+
+await loadAndApplyUserAppsCSS(user.uid);
+
+// Carregar a página inicial na primeira janela flutuante se não houver nenhuma
+if (!document.querySelector('.floating-window')) {
+createFloatingWindow('recepcao.html', 'Recepção', false);
+}
+}
+} else { // Usuário deslogado
+currentUser = null;
+if (userInfo) userInfo.textContent = '';
+if (loginGoogleButton) loginGoogleButton.style.display = 'inline-block';
+if (loginGitHubButton) loginGitHubButton.style.display = 'inline-block';
+if (logoutButton) logoutButton.style.display = 'none';
+isCurrentUserBanned = false;
+if (bannedMessage) bannedMessage.style.display = 'none';
+setNavLinksEnabled(false);
+
+document.querySelectorAll('.floating-window').forEach(win => win.remove());
+if (contentFrame) contentFrame.style.display = 'none';
+if (accessDeniedMessage) accessDeniedMessage.style.display = 'none';
+
+if (!document.querySelector('.floating-window')) {
+createFloatingWindow('recepcao.html', 'Recepção', false);
 }
 
-cancelarEdicaoBtn.addEventListener('click', () => {
-    const id = formEdicaoArtigo.getAttribute('data-id');
-    const materia = JSON.parse(formEdicaoArtigo.getAttribute('data-conteudo-original'));
-    carregarDetalhesArtigo(id, materia);
+if (userProfilePic) {
+userProfilePic.style.display = 'none';
+userProfilePic.src = '';
+}
+if (googleAppsButton) googleAppsButton.style.display = 'none';
+if (userInfoContainer) userInfoContainer.style.display = 'none';
+if (googleAppsPopup) googleAppsPopup.style.display = 'none';
+if (customAppCssStyleTag) customAppCssStyleTag.innerHTML = '';
+if (contentFrame) contentFrame.style.display = 'block';
+if (newsButton) newsButton.style.display = 'none';
+if (newsCenterPopup) newsCenterPopup.style.display = 'none';
+hideNewsPopup();
+}
+if (componentHandler) {
+componentHandler.upgradeDom();
+}
 });
 
-formEdicaoArtigo.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const id = formEdicaoArtigo.getAttribute('data-id');
-    const materiaOriginal = JSON.parse(formEdicaoArtigo.getAttribute('data-conteudo-original'));
-    const user = auth.currentUser;
-    
-    if (!user) {
-        alert("Você precisa estar logado para editar.");
-        return;
-    }
+// --- Event Listeners DOMContentLoaded ---
+document.addEventListener('DOMContentLoaded', () => {
+// Re-obter referências aos elementos DOM dentro deste escopo
+const googleAppsButton = document.getElementById('google-apps-button');
+const googleAppsPopup = document.getElementById('google-apps-popup');
 
-    const novaVersaoArtigo = {
-        titulo: editTitulo.value,
-        descricao: editDescricao.value,
-        setor: materiaOriginal.setor,
-        armario: materiaOriginal.armario,
-        arquivo: materiaOriginal.arquivo,
-        fontes: materiaOriginal.fontes,
-        createdAt: materiaOriginal.createdAt,
-        ultimaEdicao: firebase.firestore.FieldValue.serverTimestamp(),
-        editorId: user.uid,
-        editorEmail: user.email
-    };
-    
-    const historicoData = {
-        ...novaVersaoArtigo,
-        idArtigo: id,
-        dataEdicao: novaVersaoArtigo.ultimaEdicao,
-        sumarioEdicao: editSumario.value || 'Edição sem resumo.'
-    };
+const navLinks = document.querySelectorAll('.mdl-navigation__link');
 
-    try {
-        await db.collection('historicoEdicoes').add(historicoData);
-        await db.collection('materias').doc(id).update(novaVersaoArtigo);
+// Get references for news popup elements (kept)
+const newsButton = document.getElementById('news-button');
+const newsCenterPopup = document.getElementById('news-center-popup');
+const closeNewsPopupButton = document.getElementById('close-news-popup-button');
+const viewAllNewsButton = document.getElementById('view-all-news-button');
 
-        alert("Artigo atualizado com sucesso!");
-        carregarDetalhesArtigo(id, novaVersaoArtigo);
-        buscarArtigos(currentCategory, currentArmario);
-    } catch (error) {
-        console.error("Erro ao salvar a edição:", error);
-        alert("Erro ao salvar a edição: " + error.message);
-    }
+// --- Adicionar Event Listeners ---
+
+// Botão Google Apps (mantido, mas modificado)
+if (googleAppsButton) {
+googleAppsButton.addEventListener('click', (event) => {
+event.stopPropagation(); // Evita que o clique se propague para o document
+if (googleAppsPopup.style.display === 'block') {
+googleAppsPopup.style.display = 'none';
+} else {
+googleAppsPopup.style.display = 'block';
+// Carregar apps dinamicamente (MODIFIED: hardcoded apps)
+const appGrid = document.getElementById('app-grid');
+appGrid.innerHTML = ''; // Clear existing content
+
+// MODIFIED: Hardcoded list of WZZM services
+const wzzmServices = [
+{ name: 'Office WZZM', url: 'https://office.wzzm.org', iconUrl: 'https://wzzm.org/iconmagic.png' },
+{ name: 'Escolar WZZM', url: 'https://escolar.wzzm.org', iconUrl: 'https://wzzm.org/iconmagic.png' },
+{ name: 'Minha Persona WZZM', url: 'https://minhapersona.wzzm.org', iconUrl: 'https://wzzm.org/iconmagic.png' },
+{ name: 'Wiki Zero', url: 'https://wikizero.wzzm.org/', iconUrl: 'https://wzzm.org/iconmagic.png' },
+{ name: 'UWG Wikidot', url: 'https://uwg.wikidot.com', iconUrl: 'https://uwg.wikidot.png' },
+{ name: 'Wiki Metro SP', url: 'https://wikimetrosp.miraheze.org', iconUrl: 'https://wikimetrosp.miraheze.org/logo.png' }
+];
+wzzmServices.forEach(app => {
+const appItem = document.createElement('div');
+appItem.classList.add('app-item');
+appItem.innerHTML = `
+<img src="${app.iconUrl}" alt="${app.name}"> <span>${app.name}</span> `;
+appItem.addEventListener('click', () => {
+window.open(app.url, '_blank'); // Opens in a new tab for external services
+googleAppsPopup.style.display = 'none'; // Close the popup
+});
+appGrid.appendChild(appItem);
+});
+}
+});
+}
+
+// Event Listeners for News Button and Popup (mantidos)
+if (newsButton) {
+newsButton.addEventListener('click', (event) => {
+event.stopPropagation();
+if (newsCenterPopup.style.display === 'flex') {
+hideNewsPopup();
+} else {
+showNewsPopup();
+}
+});
+}
+
+if (closeNewsPopupButton) {
+closeNewsPopupButton.addEventListener('click', () => {
+hideNewsPopup();
+});
+}
+
+if (viewAllNewsButton) {
+viewAllNewsButton.addEventListener('click', () => {
+createFloatingWindow('visualizarnoticias.html', 'Todas as Notícias'); // Carrega em nova janela
+hideNewsPopup(); // Hide the popup
+});
+}
+
+// Listener global para fechar popups ao clicar fora (ajustado)
+document.addEventListener('click', (event) => {
+// Fecha o popup de apps se clicar fora dele
+if (googleAppsPopup && googleAppsPopup.style.display === 'block' &&
+!googleAppsButton.contains(event.target) &&
+!googleAppsPopup.contains(event.target)) {
+googleAppsPopup.style.display = 'none';
+}
+
+// Fecha o popup de notícias se clicar fora dele (mantido)
+if (newsCenterPopup && newsCenterPopup.style.display === 'flex' &&
+!newsButton.contains(event.target) &&
+!newsCenterPopup.contains(event.target)) {
+newsCenterPopup.style.display = 'none';
+}
 });
 
-// --- Funções de Histórico (individual do artigo) ---
-async function abrirHistorico(id) {
-    detalhesArtigo.style.display = 'none';
-    editorArtigo.style.display = 'none';
-    novoArtigoSection.style.display = 'none';
-    paginaUsuarioSection.style.display = 'none';
-    historicoArtigo.style.display = 'block';
+// Adiciona event listener para links de navegação no drawer (ajustado)
+navLinks.forEach(link => {
+link.addEventListener('click', function(event) {
+const pageSrc = this.getAttribute('onclick'); // Get the raw onclick attribute
+let actualPageSrc = '';
+let requiresAuth = false;
 
-    listaHistorico.innerHTML = '<p style="text-align: center; color: #888;">Carregando histórico...</p>';
-
-    try {
-        const querySnapshot = await db.collection('historicoEdicoes')
-            .where('idArtigo', '==', id)
-            .orderBy('dataEdicao', 'desc')
-            .get();
-
-        if (querySnapshot.empty) {
-            listaHistorico.innerHTML = '<p style="text-align: center; color: #888;">Nenhuma edição encontrada.</p>';
-            return;
-        }
-
-        let html = '';
-        querySnapshot.forEach(doc => {
-            const edicao = doc.data();
-            const dataFormatada = edicao.dataEdicao ? new Date(edicao.dataEdicao.seconds * 1000).toLocaleString() : 'Data desconhecida';
-            const tituloDaEdicao = edicao.titulo || 'Título não disponível';
-
-            const ehAdmin = edicao.editorId && adminUids.includes(edicao.editorId);
-            const editorInfo = edicao.editorEmail || 'Desconhecido';
-            const adminTag = ehAdmin ? '<span style="font-weight: bold; color: #e74c3c;">(Administrador)</span>' : '';
-
-            html += `
-                <div style="border-bottom: 1px solid #eaecf0; padding: 1em 0; margin-bottom: 1em;">
-                    <p><strong>Editor:</strong> ${editorInfo} ${adminTag}</p>
-                    <p><strong>Data da Edição:</strong> ${dataFormatada}</p>
-                    <p><strong>Título:</strong> ${tituloDaEdicao}</p>
-                    <p><strong>Resumo:</strong> ${edicao.sumarioEdicao || 'Nenhum'}</p>
-                </div>
-            `;
-        });
-        listaHistorico.innerHTML = html;
-    } catch (error) {
-        console.error("Erro ao buscar o histórico:", error);
-        listaHistorico.innerHTML = `<p style="text-align: center; color: #e74c3c;">Erro ao carregar o histórico: ${error.message}</p>`;
-    }
+// Extract actual page source and requiresAuth
+if (pageSrc && pageSrc.includes("loadPage(")) {
+const match = pageSrc.match(/loadPage\('([^']*)', (true|false)\)/);
+if (match) {
+actualPageSrc = match[1];
+requiresAuth = match[2] === 'true';
+}
 }
 
-voltarDetalhesBtn.addEventListener('click', () => {
-    const id = artigoSelecionado.getAttribute('data-id');
-    db.collection('materias').doc(id).get().then(doc => {
-        if (doc.exists) {
-            carregarDetalhesArtigo(doc.id, doc.data());
-        }
-    });
+if (isCurrentUserBanned && !actualPageSrc.includes('POL%C3%8DTICAS%20GERAIS%20DO%20WIKI%20ZONE%20ZERO%20MOD.pdf')) {
+event.preventDefault();
+return;
+}
+
+if (this.classList.contains('disabled') && !actualPageSrc.includes('POL%C3%8DTICAS%20GERAIS%20DO%20WIKI%20ZONE%20ZERO%20MOD.pdf')) {
+event.preventDefault();
+return;
+}
+
+if (actualPageSrc.includes('POL%C3%8DTICAS%20GERAIS%20DO%20WIKI%20ZONE%20ZERO%20MOD.pdf')) {
+// Se for o link das políticas, abre em nova aba/janela do navegador para PDF
+window.open(actualPageSrc, '_blank');
+event.preventDefault(); // Previna o comportamento padrão para não carregar em janela flutuante
+return;
+}
+
+event.preventDefault();
+createFloatingWindow(actualPageSrc, null, requiresAuth); // Usar createFloatingWindow
+// Fecha o drawer do MDL se estiver aberto
+if (document.querySelector('.mdl-layout__drawer.is-visible')) {
+document.querySelector('.mdl-layout__obfuscator').classList.remove('is-visible');
+document.querySelector('.mdl-layout__drawer').classList.remove('is-visible');
+}
+});
+});
+// Inicializa componentes MDL
+if (componentHandler) {
+componentHandler.upgradeDom();
+}
 });
 
-// --- Funções de Criação de Artigo ---
-function abrirFormNovoArtigo() {
-    detalhesArtigo.style.display = 'none';
-    editorArtigo.style.display = 'none';
-    historicoArtigo.style.display = 'none';
-    paginaUsuarioSection.style.display = 'none';
-    novoArtigoSection.style.display = 'block';
-
-    formNovoArtigo.reset();
+// Utilitário para gerar IDs únicos
+function uniqueID() {
+return 'win_' + Math.random().toString(36).substr(2, 9);
 }
 
-formNovoArtigo.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const user = auth.currentUser;
-    if (!user) {
-        alert("Você precisa estar logado para criar um artigo.");
-        return;
-    }
+// Função para criar uma nova janela flutuante
+// Adicionamos um histórico para cada iframe para os botões de navegação
+const windowHistory = {}; // Armazena o histórico para cada janela (key: winId, value: array de URLs)
+const windowHistoryIndex = {}; // Armazena o índice atual do histórico para cada janela
 
-    const novoArtigoData = {
-        titulo: newTitulo.value,
-        descricao: newDescricao.value,
-        setor: newSetor.value,
-        armario: newArmario.value,
-        arquivo: 'nao-arquivado',
-        fontes: [], 
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        ultimaEdicao: firebase.firestore.FieldValue.serverTimestamp(),
-        editorId: user.uid,
-        editorEmail: user.email
-    };
+function createFloatingWindow(src, customTitle = null, requiresAuth = false) {
+const container = document.getElementById('window-container');
 
-    try {
-        const novoDocRef = await db.collection('materias').add(novoArtigoData);
-        
-        const historicoData = {
-            ...novoArtigoData,
-            idArtigo: novoDocRef.id,
-            dataEdicao: novoArtigoData.ultimaEdicao,
-            sumarioEdicao: 'Criação do artigo.'
-        };
-        await db.collection('historicoEdicoes').add(historicoData);
+// Verifica as regras de acesso antes de criar a janela
+if (isCurrentUserBanned && src !== 'recepcao.html' && src !== 'POLÍTICAS GERAIS DO WIKI ZONE ZERO MOD.pdf') {
+document.getElementById('banned-message').style.display = 'block';
+return;
+}
+if (requiresAuth && !currentUser) {
+document.getElementById('access-denied-message').style.display = 'block';
+return;
+}
 
-        alert("Artigo criado com sucesso!");
-        formNovoArtigo.reset();
-        buscarArtigos(currentCategory, currentArmario);
-    } catch (error) {
-        console.error("Erro ao criar o artigo:", error);
-        alert("Erro ao criar o artigo: " + error.message);
-    }
+const existing = Array.from(document.querySelectorAll('.floating-window'))
+.find(win => win.getAttribute('data-src') === src);
+if (existing) {
+bringWindowToFront(existing);
+return;
+}
+
+const winId = uniqueID();
+windowHistory[winId] = [];
+windowHistoryIndex[winId] = -1;
+
+// Elemento da janela
+const win = document.createElement('div');
+win.className = 'floating-window';
+win.setAttribute('data-winid', winId);
+win.setAttribute('data-src', src); // Armazena o SRC original para verificação de existência
+
+// Cabeçalho da janela
+const header = document.createElement('div');
+header.className = 'window-header';
+
+// Função para extrair o nome do arquivo da URL para o título
+function getFileNameFromUrl(url) {
+try {
+const urlObj = new URL(url, window.location.origin);
+let path = urlObj.pathname.split('/').pop();
+if (path.includes('.')) {
+path = path.split('.')[0]; // Remove a extensão
+}
+path = path.replace(/%20/g, ' '); // Decodifica espaços
+return path || 'Nova Janela'; // Retorna o nome do arquivo ou "Nova Janela" se vazio
+} catch (e) {
+return url; // Em caso de erro (URL inválida), retorna a URL completa
+}
+}
+
+const titleText = customTitle || getFileNameFromUrl(src);
+
+header.innerHTML = `
+<div style="display: flex; align-items: center;">
+<button title="Voltar" onclick="historyBack('${winId}')" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored window-nav-back">
+<i class="material-icons">arrow_back</i>
+</button>
+<button title="Avançar" onclick="historyForward('${winId}')" class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored window-nav-forward">
+<i class="material-icons">arrow_forward</i>
+</button>
+<span style="margin-left: 8px;">${titleText}</span>
+</div>
+<span class="window-controls">
+<button title="Fechar" onclick="closeWindow('${winId}')">&times;</button>
+</span>
+`;
+
+// Corpo da janela com iframe
+const body = document.createElement('div');
+body.className = 'window-body';
+const iframe = document.createElement('iframe');
+iframe.src = src;
+iframe.setAttribute('data-winid', winId); // Adiciona o winId ao iframe
+body.appendChild(iframe);
+
+win.appendChild(header);
+win.appendChild(body);
+container.appendChild(win);
+
+// Torna a janela arrastável
+makeWindowDraggable(win, header);
+// Foca a janela ao clicar
+win.addEventListener('mousedown', () => {
+bringWindowToFront(win);
+});
+// Coloca no topo ao criar
+bringWindowToFront(win);
+
+// Adiciona a URL inicial ao histórico da nova janela
+addToWindowHistory(winId, src);
+
+// Adiciona listener para atualizações de URL dentro do iframe
+iframe.addEventListener('load', function() {
+try {
+// Para mesma origem, atualiza o histórico e o título
+if (iframe.contentWindow.location.origin === window.location.origin) {
+const currentIframeSrc = iframe.contentWindow.location.href;
+if (windowHistory[winId][windowHistoryIndex[winId]] !== currentIframeSrc) {
+addToWindowHistory(winId, currentIframeSrc);
+const newTitle = getFileNameFromUrl(currentIframeSrc);
+win.querySelector('.window-header span:last-of-type').textContent = newTitle; // Atualiza o texto do título
+}
+}
+} catch (e) {
+// Ignora erros de Same-Origin Policy
+console.warn("Same-Origin Policy previne acesso ao conteúdo do iframe para atualização do histórico.", e);
+}
+updateNavigationButtons(winId); // Atualiza o estado dos botões Voltar/Avançar
+});
+}
+
+// Função para adicionar URL ao histórico da janela
+function addToWindowHistory(winId, url) {
+if (!windowHistory[winId]) {
+windowHistory[winId] = [];
+windowHistoryIndex[winId] = -1;
+}
+
+// Remove URLs à frente do índice atual se navegarmos para trás e depois para uma nova página
+if (windowHistoryIndex[winId] < windowHistory[winId].length - 1) {
+windowHistory[winId] = windowHistory[winId].slice(0, windowHistoryIndex[winId] + 1);
+}
+
+windowHistory[winId].push(url);
+windowHistoryIndex[winId]++;
+updateNavigationButtons(winId);
+}
+
+// Função para navegar para trás no histórico da janela
+function historyBack(winId) {
+if (windowHistory[winId] && windowHistoryIndex[winId] > 0) {
+windowHistoryIndex[winId]--;
+const iframe = document.querySelector(`.floating-window[data-winid="${winId}"] iframe`);
+if (iframe) {
+iframe.src = windowHistory[winId][windowHistoryIndex[winId]];
+const newTitle = getFileNameFromUrl(iframe.src);
+iframe.closest('.floating-window').querySelector('.window-header span:last-of-type').textContent = newTitle; // Atualiza o título
+}
+updateNavigationButtons(winId);
+}
+}
+
+// Função para navegar para frente no histórico da janela
+function historyForward(winId) {
+if (windowHistory[winId] && windowHistoryIndex[winId] < windowHistory[winId].length - 1) {
+windowHistoryIndex[winId]++;
+const iframe = document.querySelector(`.floating-window[data-winid="${winId}"] iframe`);
+if (iframe) {
+iframe.src = windowHistory[winId][windowHistoryIndex[winId]];
+const newTitle = getFileNameFromUrl(iframe.src);
+iframe.closest('.floating-window').querySelector('.window-header span:last-of-type').textContent = newTitle; // Atualiza o título
+}
+updateNavigationButtons(winId);
+}
+}
+
+// Função para atualizar o estado (disabled) dos botões de navegação
+function updateNavigationButtons(winId) {
+const win = document.querySelector(`.floating-window[data-winid="${winId}"]`);
+if (!win) return;
+const backButton = win.querySelector('.window-nav-back');
+const forwardButton = win.querySelector('.window-nav-forward');
+
+if (backButton) {
+backButton.disabled = !(windowHistory[winId] && windowHistoryIndex[winId] > 0);
+backButton.style.opacity = backButton.disabled ? '0.5' : '1';
+backButton.style.cursor = backButton.disabled ? 'not-allowed' : 'pointer';
+}
+if (forwardButton) {
+forwardButton.disabled = !(windowHistory[winId] && windowHistoryIndex[winId] < windowHistory[winId].length - 1);
+forwardButton.style.opacity = forwardButton.disabled ? '0.5' : '1';
+forwardButton.style.cursor = forwardButton.disabled ? 'not-allowed' : 'pointer';
+}
+}
+
+// Deixe a janela arrastável
+function makeWindowDraggable(win, handle) {
+let offsetX = 0, offsetY = 0, dragging = false;
+handle.addEventListener('mousedown', function (e) {
+dragging = true;
+offsetX = e.clientX - win.offsetLeft;
+offsetY = e.clientY - win.offsetTop;
+win.style.zIndex = getNextZIndex();
+document.body.style.userSelect = 'none';
+});
+document.addEventListener('mousemove', function (e) {
+if (dragging) {
+win.style.left = (e.clientX - offsetX) + 'px';
+win.style.top = (e.clientY - offsetY) + 'px';
+}
+});
+document.addEventListener('mouseup', function () {
+dragging = false;
+document.body.style.userSelect = '';
+});
+}
+
+// Função para fechar janela
+function closeWindow(winId) {
+const win = document.querySelector(`.floating-window[data-winid="${winId}"]`);
+if (win) {
+delete windowHistory[winId];
+delete windowHistoryIndex[winId];
+win.remove();
+}
+}
+
+// Z-Index para trazer para frente
+let topZ = 1000;
+function getNextZIndex() {
+return ++topZ;
+}
+function bringWindowToFront(win) {
+win.style.zIndex = getNextZIndex();
+}
+
+// Substitua a função loadPage para usar createFloatingWindow
+function loadPage(src, requiresAuth = false) {
+createFloatingWindow(src, null, requiresAuth);
+}
+
+// ========== CAPTURA E EXIBE ERROS DO CONSOLE ==========
+// Array para armazenar os erros capturados
+window._wzzmErrorLog = [];
+// Captura erros globais de JavaScript
+window.addEventListener('error', function(e) {
+window._wzzmErrorLog.push(`[${new Date().toLocaleTimeString()}] ${e.message} (${e.filename}:${e.lineno})`);
+});
+// Captura rejeições de Promise não tratadas
+window.addEventListener('unhandledrejection', function(e) {
+window._wzzmErrorLog.push(`[${new Date().toLocaleTimeString()}] Unhandled Promise: ${e.reason}`);
+});
+// Intercepta console.error e armazena as mensagens
+(function() {
+const originalError = console.error;
+console.error = function(...args) {
+window._wzzmErrorLog.push(`[${new Date().toLocaleTimeString()}] console.error: ${args.join(' ')}`);
+originalError.apply(console, args);
+};
+})();
+// Mostra o popup com a lista de erros ao clicar no botão
+document.addEventListener('DOMContentLoaded', function() {
+var btn = document.getElementById('error-log-button');
+if (!btn) return;
+btn.addEventListener('click', function() {
+var logList = document.getElementById('error-log-list');
+logList.innerHTML = '';
+if (window._wzzmErrorLog.length === 0) {
+logList.innerHTML = '<li style="color:green;">Nenhum erro registrado nesta sessão.</li>';
+} else {
+window._wzzmErrorLog.slice(-100).forEach(function(msg) {
+var li = document.createElement('li');
+li.textContent = msg;
+logList.appendChild(li);
+});
+}
+document.getElementById('error-log-popup').style.display = 'block';
+});
 });
 
-cancelarNovoArtigoBtn.addEventListener('click', () => {
-    novoArtigoSection.style.display = 'none';
-    buscarArtigos(currentCategory, currentArmario);
+document.addEventListener('DOMContentLoaded', function () {
+fetch('menu.json')
+.then(response => response.json())
+.then(menuItems => {
+const drawerMenu = document.getElementById('drawer-menu');
+if (!drawerMenu) return;
+drawerMenu.innerHTML = ''; // Limpa itens antigos, se houver
+
+menuItems.forEach(item => {
+const a = document.createElement('a');
+a.className = 'mdl-navigation__link';
+a.href = '#'; // A navegação será controlada pelo onclick
+a.setAttribute('onclick', `loadPage('${item.href}', ${item.requiresAuth})`);
+if (item.requiresAuth) {
+a.setAttribute('data-requires-auth', 'true');
+}
+a.textContent = item.label;
+drawerMenu.appendChild(a);
+});
+})
+.catch(err => {
+console.error('Erro ao carregar menu.json:', err);
+});
 });
 
-// --- Funções da Página do Usuário ---
-function abrirPaginaUsuario() {
-    const user = auth.currentUser;
-    if (!user) {
-        alert("Você precisa estar logado para ver seu perfil.");
-        return;
-    }
+// NOVO SCRIPT PARA CARREGAR info-general.json DO FIREBASE E APLICAR AS MUDANÇAS
+document.addEventListener('DOMContentLoaded', () => {
+// 1. Determina o ID do documento com base no hostname
+let docId = window.location.hostname;
 
-    detalhesArtigo.style.display = 'none';
-    editorArtigo.style.display = 'none';
-    historicoArtigo.style.display = 'none';
-    novoArtigoSection.style.display = 'none';
-    paginaUsuarioSection.style.display = 'block';
-
-    exibirAba('contribuicoes');
+// Remove "www." se presente
+if (docId.startsWith('www.')) {
+docId = docId.substring(4);
 }
 
-function exibirAba(tabName) {
-    document.querySelectorAll('.tab-button').forEach(btn => {
-        btn.classList.remove('active');
-        btn.style.backgroundColor = '#a2a9b1';
-    });
-    document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
-    
-    const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
-    activeBtn.classList.add('active');
-    activeBtn.style.backgroundColor = '#0645ad';
-    document.getElementById(`${tabName}-tab`).style.display = 'block';
-
-    if (tabName === 'contribuicoes') {
-        carregarMinhasContribuicoes();
-    } else if (tabName === 'pagina-pessoal') {
-        carregarPaginaPessoal();
-    } else if (tabName === 'discussao') {
-        carregarMensagensDiscussao();
-    }
+// Define um fallback para ambiente local (ex: localhost, 127.0.0.1)
+// Se você estiver desenvolvendo localmente, ele usará 'defaultConfig'
+// Certifique-se de ter um documento 'defaultConfig' ou 'wikiConfig' na sua coleção 'configuracoes'
+if (docId === 'localhost' || docId === '127.0.0.1' || docId.match(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/)) {
+docId = 'wikiConfig'; // Ou um ID padrão que você prefira para ambiente local
 }
 
-async function carregarMinhasContribuicoes() {
-    const user = auth.currentUser;
-    listaMinhasContribuicoes.innerHTML = '<p style="text-align: center; color: #888;">Buscando suas contribuições...</p>';
+console.log(`Tentando carregar configuração para o site: ${docId}`);
 
-    try {
-        const querySnapshot = await db.collection('historicoEdicoes')
-            .where('editorId', '==', user.uid)
-            .orderBy('dataEdicao', 'desc')
-            .get();
+const configDocRef = firestore.collection('configuracoes').doc(docId);
 
-        if (querySnapshot.empty) {
-            listaMinhasContribuicoes.innerHTML = '<p style="text-align: center; color: #888;">Você ainda não fez nenhuma contribuição.</p>';
-            return;
-        }
-
-        let html = '';
-        querySnapshot.forEach(doc => {
-            const contribuicao = doc.data();
-            const dataFormatada = contribuicao.dataEdicao ? new Date(contribuicao.dataEdicao.seconds * 1000).toLocaleString() : 'Data desconhecida';
-            const tituloArtigo = contribuicao.titulo || 'Título não disponível';
-
-            html += `
-                <div class="contribuicao-item" data-id="${contribuicao.idArtigo}">
-                    <p><strong>Artigo:</strong> ${tituloArtigo}</p>
-                    <p><strong>Data da Edição:</strong> ${dataFormatada}</p>
-                    <p><strong>Resumo:</strong> ${contribuicao.sumarioEdicao || 'Nenhum'}</p>
-                </div>
-            `;
-        });
-        listaMinhasContribuicoes.innerHTML = html;
-
-        listaMinhasContribuicoes.querySelectorAll('.contribuicao-item').forEach(item => {
-            item.addEventListener('click', async (e) => {
-                const artigoId = e.currentTarget.getAttribute('data-id');
-                try {
-                    const doc = await db.collection('materias').doc(artigoId).get();
-                    if (doc.exists) {
-                        carregarDetalhesArtigo(doc.id, doc.data());
-                    } else {
-                        alert("O artigo original não foi encontrado.");
-                    }
-                } catch (error) {
-                    console.error("Erro ao buscar o artigo:", error);
-                    alert("Erro ao buscar o artigo.");
-                }
-            });
-        });
-    } catch (error) {
-        console.error("Erro ao buscar suas contribuições:", error);
-        listaMinhasContribuicoes.innerHTML = `<p style="text-align: center; color: #e74c3c;">Erro ao carregar suas contribuições: ${error.message}</p>`;
-    }
+// Listener em tempo real para mudanças no documento
+configDocRef.onSnapshot(docSnapshot => {
+if (docSnapshot.exists) {
+const data = docSnapshot.data();
+applyConfigData(data);
+console.log("Configurações carregadas do Firebase (em tempo real):", data);
+} else {
+console.warn(`Documento de configuração '${docId}' não encontrado na coleção 'configuracoes'. Usando valores padrão.`);
+// Se o documento específico do site não existir, você pode carregar um fallback
+// Por exemplo, um documento 'default' ou 'global'
+// Para simplicidade, aqui ele usará os valores padrão definidos em applyConfigData.
+applyConfigData({});
 }
-
-async function carregarPaginaPessoal() {
-    const user = auth.currentUser;
-    if (!user) return;
-    
-    try {
-        const docRef = db.collection('paginasUsuario').doc(user.uid);
-        const doc = await docRef.get();
-        if (doc.exists) {
-            const data = doc.data();
-            paginaPessoalTextarea.value = data.conteudo || '';
-            paginaPessoalContent.innerHTML = data.conteudo || '<p>Sua página pessoal ainda está vazia.</p>';
-        } else {
-            paginaPessoalTextarea.value = '';
-            paginaPessoalContent.innerHTML = '<p>Sua página pessoal ainda está vazia.</p>';
-        }
-    } catch (error) {
-        console.error("Erro ao carregar página pessoal:", error);
-        alert("Erro ao carregar sua página pessoal.");
-    }
-}
-
-async function salvarPaginaPessoal() {
-    const user = auth.currentUser;
-    if (!user) return;
-    const conteudo = paginaPessoalTextarea.value;
-    
-    try {
-        await db.collection('paginasUsuario').doc(user.uid).set({
-            conteudo: conteudo,
-            editorEmail: user.email,
-            ultimaEdicao: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        alert("Página pessoal salva com sucesso!");
-        carregarPaginaPessoal();
-    } catch (error) {
-        console.error("Erro ao salvar página pessoal:", error);
-        alert("Erro ao salvar sua página pessoal.");
-    }
-}
-
-// NOVO: Funções de Mensagens
-async function carregarMensagensDiscussao() {
-    const user = auth.currentUser;
-    if (!user) return;
-    
-    listaMensagens.innerHTML = '<p style="text-align: center; color: #888;">Carregando mensagens...</p>';
-    
-    try {
-        const querySnapshot = await db.collection('mensagens')
-            .where('toUid', '==', user.uid)
-            .orderBy('timestamp', 'desc')
-            .get();
-            
-        if (querySnapshot.empty) {
-            listaMensagens.innerHTML = '<p style="text-align: center; color: #888;">Nenhuma mensagem nova.</p>';
-            return;
-        }
-
-        let html = '';
-        querySnapshot.forEach(doc => {
-            const mensagem = doc.data();
-            const dataFormatada = mensagem.timestamp ? new Date(mensagem.timestamp.seconds * 1000).toLocaleString() : 'Data desconhecida';
-            
-            html += `
-                <div class="mensagem-item">
-                    <p><strong>De:</strong> ${mensagem.senderEmail || 'Desconhecido'}</p>
-                    <p style="margin-top: 5px;"><strong>Mensagem:</strong> ${mensagem.message}</p>
-                    <p style="margin-top: 5px; font-size: 0.8em; color: #72777d;">Enviado em: ${dataFormatada}</p>
-                </div>
-            `;
-        });
-        listaMensagens.innerHTML = html;
-        
-    } catch (error) {
-        console.error("Erro ao carregar mensagens:", error);
-        listaMensagens.innerHTML = `<p style="text-align: center; color: #e74c3c;">Erro ao carregar mensagens: ${error.message}</p>`;
-    }
-}
-
-formEnviarMensagem.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const user = auth.currentUser;
-    if (!user) {
-        alert("Você precisa estar logado para enviar mensagens.");
-        return;
-    }
-    
-    const destinatarioUid = mensagemUidDestinatario.value.trim();
-    const conteudo = mensagemConteudo.value.trim();
-    
-    if (!destinatarioUid || !conteudo) {
-        alert("Preencha o UID do destinatário e a mensagem.");
-        return;
-    }
-    
-    try {
-        await db.collection('mensagens').add({
-            fromUid: user.uid,
-            toUid: destinatarioUid,
-            senderEmail: user.email,
-            message: conteudo,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        alert("Mensagem enviada com sucesso!");
-        mensagemUidDestinatario.value = '';
-        mensagemConteudo.value = '';
-    } catch (error) {
-        console.error("Erro ao enviar mensagem:", error);
-        alert("Erro ao enviar mensagem: " + error.message);
-    }
+}, error => {
+console.error("Erro ao carregar configurações do Firebase:", error);
+// Em caso de erro, tenta aplicar valores padrão
+applyConfigData({});
 });
 
-// --- Funções de Impressão ---
-function imprimirArtigo() {
-    const articleToPrint = detalhesArtigo.innerHTML;
+// Função para aplicar os dados da configuração aos elementos da página
+function applyConfigData(data) {
+// Altera o título da página
+document.title = data.nomeCompletoWiki || 'Wiki';
 
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write('<html><head><title>Imprimir Artigo</title>');
-    
-    const styles = document.querySelectorAll('style, link[rel="stylesheet"]');
-    styles.forEach(style => {
-        printWindow.document.write(style.outerHTML);
-    });
-
-    printWindow.document.write('</head><body>');
-    printWindow.document.write('<div class="detalhes-artigo">' + articleToPrint + '</div>');
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-
-    printWindow.onload = () => {
-        const botoesParaOcultar = printWindow.document.querySelector('.botoes-artigo-imprimivel');
-        if (botoesParaOcultar) {
-            botoesParaOcultar.style.display = 'none';
-        }
-        printWindow.focus();
-        printWindow.print();
-        printWindow.close();
-    };
+// Altera o nome da página no cabeçalho
+const wikiPageName = document.getElementById('wiki-page-name');
+if (wikiPageName) {
+wikiPageName.textContent = data.nomeCompletoWiki || 'Wiki';
+}
+// Altera o nome da página no drawer
+const drawerTitle = document.getElementById('drawer-title');
+if (drawerTitle) {
+drawerTitle.textContent = data.nomePaginaDrawer || 'Navegação';
 }
 
-
-// --- Event Listeners para os botões e filtros ---
-perfilButton.addEventListener('click', abrirPaginaUsuario);
-novoArtigoButton.addEventListener('click', abrirFormNovoArtigo);
-
-tabButtons.forEach(button => {
-    button.addEventListener('click', (e) => {
-        const tabName = e.target.getAttribute('data-tab');
-        exibirAba(tabName);
-    });
-});
-
-salvarPaginaPessoalBtn.addEventListener('click', salvarPaginaPessoal);
-cancelarPaginaPessoalBtn.addEventListener('click', carregarPaginaPessoal);
-
-voltarAoPainelPerfilBtn.addEventListener('click', () => {
-    paginaUsuarioSection.style.display = 'none';
-    buscarArtigos(currentCategory, currentArmario);
-});
-
-categoryList.addEventListener('click', (e) => {
-    e.preventDefault();
-    const link = e.target.closest('a');
-    if (!link) return;
-    
-    const categoria = link.getAttribute('data-category');
-    if (categoria) {
-        const currentActive = categoryList.querySelector('a.active');
-        if (currentActive) {
-            currentActive.classList.remove('active');
-        }
-        link.classList.add('active');
-        
-        currentCategory = categoria;
-        buscarArtigos(currentCategory, currentArmario);
-    }
-});
-
-armarioFilter.addEventListener('change', (e) => {
-    currentArmario = e.target.value;
-    buscarArtigos(currentCategory, currentArmario);
+// Altera o texto do link de "Procurar Artigos"
+const searchArticlesLink = document.getElementById('search-articles-link');
+if (searchArticlesLink) {
+searchArticlesLink.textContent = data.linkProcurarArtigos || 'Procurar Artigos';
+}
+}
 });
 </script>
 </body>
