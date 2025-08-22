@@ -193,20 +193,20 @@
             const reader = new FileReader();
             reader.onloadend = async function() {
                 const base64String = reader.result;
-                const fileExtension = file.name.split('.').pop();
+                const fileName = file.name;
                 
                 try {
-                    const newDocRef = db.collection('imagenscode').doc(fileExtension.toUpperCase());
+                    // **ALTERAÇÃO AQUI: USANDO O NOME DO ARQUIVO COMO ID DO DOCUMENTO**
+                    const newDocRef = db.collection('imagenscode').doc(fileName);
                     
                     await newDocRef.set({
-                        file_name: file.name,
+                        file_name: fileName,
                         base64_code: base64String,
-                        extension: fileExtension,
-                        uploadedBy: user.uid, // Salva o UID do usuário que subiu a imagem
+                        uploadedBy: user.uid,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     
-                    statusDiv.innerText = `Imagem salva com sucesso! O documento foi criado com o nome da extensão: ${fileExtension.toUpperCase()}`;
+                    statusDiv.innerText = `Imagem salva com sucesso! O documento foi criado com o nome: ${fileName}`;
                     statusDiv.style.color = '#4CAF50';
                 } catch (error) {
                     console.error("Erro ao salvar a imagem:", error);
